@@ -1,0 +1,2567 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Зублефар · Обращения</title>
+<style>
+/* ============================================================
+   ТОКЕНЫ. Светлая тема — базовая, определена на голом :root.
+   Тёмная переопределяет только значения токенов (дважды:
+   системная настройка и явный переключатель).
+   Шрифты — только системные: файл обязан работать без сети.
+   ============================================================ */
+:root{
+  --plane:#f7f7f4;
+  --surface:#fcfcfb;
+  --surface-2:#f1f1ec;
+  --surface-3:#e9e9e2;
+  --ink:#0b0b0b;
+  --ink-2:#52514e;
+  --muted:#898781;
+  --grid:#e1e0d9;
+  --axis:#c3c2b7;
+  --hair:rgba(11,11,11,.10);
+  --hair-strong:rgba(11,11,11,.18);
+  --accent:#2a78d6;
+  --s1:#2a78d6;
+  --s2:#eb6834;
+  --s3:#1baf7a;
+  --good:#0ca30c;
+  --warn:#fab219;
+  --crit:#d03b3b;
+  --good-ink:#006300;
+  --shadow:0 1px 2px rgba(11,11,11,.05);
+  --r:10px;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --plane:#0d0d0d;
+    --surface:#1a1a19;
+    --surface-2:#232321;
+    --surface-3:#2c2c2a;
+    --ink:#ffffff;
+    --ink-2:#c3c2b7;
+    --muted:#898781;
+    --grid:#2c2c2a;
+    --axis:#383835;
+    --hair:rgba(255,255,255,.10);
+    --hair-strong:rgba(255,255,255,.20);
+    --accent:#3987e5;
+    --s1:#3987e5;
+    --s2:#d95926;
+    --s3:#199e70;
+    --good:#0ca30c;
+    --warn:#fab219;
+    --crit:#d03b3b;
+    --good-ink:#0ca30c;
+    --shadow:0 1px 2px rgba(0,0,0,.4);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --plane:#0d0d0d;
+  --surface:#1a1a19;
+  --surface-2:#232321;
+  --surface-3:#2c2c2a;
+  --ink:#ffffff;
+  --ink-2:#c3c2b7;
+  --muted:#898781;
+  --grid:#2c2c2a;
+  --axis:#383835;
+  --hair:rgba(255,255,255,.10);
+  --hair-strong:rgba(255,255,255,.20);
+  --accent:#3987e5;
+  --s1:#3987e5;
+  --s2:#d95926;
+  --s3:#199e70;
+  --good:#0ca30c;
+  --warn:#fab219;
+  --crit:#d03b3b;
+  --good-ink:#0ca30c;
+  --shadow:0 1px 2px rgba(0,0,0,.4);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--plane);
+  color:var(--ink);
+  font:14px/1.5 var(--sans);
+  -webkit-text-size-adjust:100%;
+}
+[hidden]{display:none!important}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+/* ---------- Верхняя панель ---------- */
+.topbar{
+  position:sticky;
+  top:env(safe-area-inset-top,0px);
+  z-index:40;
+  background:var(--surface);
+  border-bottom:1px solid var(--hair);
+}
+.topbar-in{
+  max-width:1280px;margin:0 auto;
+  padding-block:10px;padding-left:20px;padding-right:20px;
+  display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;
+}
+.brand{display:flex;align-items:baseline;gap:9px;margin-right:auto;min-width:0}
+.brand b{font-size:15px;font-weight:650;letter-spacing:-.01em;white-space:nowrap}
+.brand span{font-size:11px;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;white-space:nowrap}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+button,select,input[type=text],input[type=search],textarea{
+  font:inherit;color:inherit;
+}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--surface-2);color:var(--ink);
+  border:1px solid var(--hair);border-radius:8px;
+  padding:7px 12px;cursor:pointer;font-size:13px;line-height:1.2;
+  white-space:nowrap;
+}
+.btn:hover{background:var(--surface-3)}
+.btn:active{transform:translateY(.5px)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--accent);border-color:transparent;color:#fff}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.ghost{background:transparent}
+.btn.sm{padding:5px 9px;font-size:12px}
+.sel{
+  background:var(--surface-2);border:1px solid var(--hair);border-radius:8px;
+  padding:7px 8px;font-size:13px;cursor:pointer;
+}
+.field{display:flex;flex-direction:column;gap:5px}
+.field > label,.lbl{
+  font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;
+}
+input[type=text],input[type=search],textarea,.inp{
+  background:var(--surface);border:1px solid var(--hair);border-radius:8px;
+  padding:7px 9px;font-size:13px;width:100%;
+}
+textarea{font-family:var(--mono);font-size:12.5px;line-height:1.6;resize:vertical}
+
+/* ---------- Каркас страницы ---------- */
+main{max-width:1280px;margin:0 auto;padding-block:20px 56px;padding-left:20px;padding-right:20px}
+section{margin-bottom:28px}
+.eyebrow{
+  font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  font-weight:650;margin:0 0 10px;display:flex;align-items:center;gap:10px;
+}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--hair)}
+h2{font-size:17px;font-weight:650;letter-spacing:-.01em;margin:0 0 4px;text-wrap:balance}
+.sub{font-size:12.5px;color:var(--ink-2);margin:0 0 14px;max-width:72ch}
+
+/* ---------- Полоса периода ---------- */
+.periodbar{
+  display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;
+  padding:14px 16px;background:var(--surface);
+  border:1px solid var(--hair);border-left:3px solid var(--accent);
+  border-radius:var(--r);margin-bottom:18px;
+}
+.periodbar .p-main{font-size:16px;font-weight:650;letter-spacing:-.01em}
+.periodbar .p-range{font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.periodbar .p-note{font-size:12px;color:var(--muted);margin-left:auto}
+
+/* ---------- Плашки качества данных (леджер) ---------- */
+.ledger{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));
+  gap:0;border:1px solid var(--hair);border-radius:var(--r);overflow:hidden;
+  background:var(--surface);
+}
+.ledger div{padding:11px 14px;border-right:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+.ledger div:last-child{border-right:0}
+.ledger dt{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 3px}
+.ledger dd{margin:0;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.ledger .warnv{color:var(--crit)}
+
+/* ---------- KPI-плитки ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(215px,100%),1fr));gap:12px}
+.kpi{
+  background:var(--surface);border:1px solid var(--hair);border-radius:var(--r);
+  padding:14px 15px 12px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;gap:8px;min-width:0;
+}
+.kpi .k-lbl{font-size:11.5px;color:var(--ink-2);font-weight:550;line-height:1.35}
+.kpi .k-val{font-size:30px;font-weight:600;letter-spacing:-.025em;line-height:1;display:flex;align-items:baseline;gap:5px}
+.kpi .k-val u{font-size:14px;font-weight:500;color:var(--ink-2);text-decoration:none;letter-spacing:0}
+.kpi .k-foot{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:auto}
+.kpi .k-spark{height:26px;margin-top:2px}
+.kpi.empty .k-val{color:var(--muted);font-size:22px}
+
+/* ---------- Карточки графиков ---------- */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:16px}
+.card{
+  background:var(--surface);border:1px solid var(--hair);border-radius:var(--r);
+  padding:15px 16px 14px;box-shadow:var(--shadow);min-width:0;
+}
+.card h3{font-size:13.5px;font-weight:650;margin:0 0 2px;letter-spacing:-.005em}
+.card .c-sub{font-size:11.5px;color:var(--muted);margin:0 0 14px}
+
+/* ---------- Горизонтальные столбики (HTML) ---------- */
+.bars{display:flex;flex-direction:column;gap:11px;margin:0}
+.bar-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;align-items:baseline;cursor:default;border-radius:6px;padding:2px 0}
+.bar-row:hover,.bar-row:focus-visible{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.bar-name{font-size:12.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.bar-name code{
+  font-family:var(--mono);font-size:10.5px;color:var(--muted);
+  background:var(--surface-2);border:1px solid var(--hair);border-radius:4px;
+  padding:1px 4px;margin-right:6px;
+}
+.bar-val{font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar-track{display:block;grid-column:1/-1;height:10px;background:var(--surface-3);border-radius:5px;overflow:hidden}
+.bar-fill{display:block;height:100%;background:var(--s1);border-radius:0 4px 4px 0;min-width:2px}
+.bar-fill.alt{background:var(--s2)}
+.bars.textured .bar-fill{
+  background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.34) 0 3px,transparent 3px 7px);
+}
+
+/* ---------- SVG-графики ---------- */
+.chart-svg{display:block;width:100%;height:auto;overflow:visible}
+.chart-svg .gridline{stroke:var(--grid);stroke-width:1;shape-rendering:crispEdges}
+.chart-svg .axisline{stroke:var(--axis);stroke-width:1;shape-rendering:crispEdges}
+.chart-svg .tick{fill:var(--muted);font-size:10.5px;font-variant-numeric:tabular-nums}
+.chart-svg .serieline{fill:none;stroke:var(--s1);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.chart-svg .seriearea{fill:var(--s1);opacity:.10}
+.chart-svg .meanline{stroke:var(--ink-2);stroke-width:1;stroke-dasharray:none;opacity:.5}
+.chart-svg .meanlbl{fill:var(--ink-2);font-size:10.5px}
+.chart-svg .focusdot{fill:var(--s1);stroke:var(--surface);stroke-width:2}
+.chart-svg .crosshair{stroke:var(--axis);stroke-width:1}
+.chart-svg .endlbl{fill:var(--ink);font-size:11px;font-weight:600;font-variant-numeric:tabular-nums}
+.spark{display:block;width:100%;height:26px;overflow:visible}
+.spark path.l{fill:none;stroke:var(--s1);stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round}
+.spark path.a{fill:var(--s1);opacity:.10;stroke:none}
+.spark circle{fill:var(--s1)}
+
+/* ---------- Легенда ---------- */
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:12px 0 0;padding:0;list-style:none;font-size:11.5px;color:var(--ink-2)}
+.legend li{display:flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px;background:var(--s1);flex:none}
+.legend i.s2{background:var(--s2)}
+.legend i.hair{background:var(--ink-2);height:2px;border-radius:1px;opacity:.5}
+
+/* ---------- Таблица тегов (леджер, не карточка) ---------- */
+.tablewrap{overflow-x:auto;border:1px solid var(--hair);border-radius:var(--r);background:var(--surface)}
+table.data{border-collapse:collapse;width:100%;font-size:12.5px;min-width:660px}
+table.data th,table.data td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--hair);white-space:nowrap}
+table.data th{
+  font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+  font-weight:650;position:sticky;top:0;background:var(--surface);z-index:1;cursor:pointer;user-select:none;
+}
+table.data th:hover{color:var(--ink)}
+table.data th[aria-sort]{color:var(--ink)}
+table.data th .ar{font-size:9px;margin-left:3px}
+table.data th:first-child,table.data td:first-child{text-align:left;white-space:normal;min-width:190px}
+table.data td{font-variant-numeric:tabular-nums}
+table.data tbody tr:hover{background:var(--surface-2)}
+table.data tbody tr:last-child td{border-bottom:0}
+table.data tfoot td{font-weight:650;border-top:1px solid var(--hair-strong);background:var(--surface-2)}
+table.data code{font-family:var(--mono);font-size:10.5px;color:var(--muted);background:var(--surface-2);border:1px solid var(--hair);border-radius:4px;padding:1px 4px;margin-right:6px}
+
+details.tableview{margin-top:12px}
+details.tableview > summary{
+  cursor:pointer;font-size:11.5px;color:var(--ink-2);list-style:none;
+  display:inline-flex;align-items:center;gap:5px;padding:3px 0;
+}
+details.tableview > summary::-webkit-details-marker{display:none}
+details.tableview > summary::before{content:"▸";font-size:9px;color:var(--muted)}
+details.tableview[open] > summary::before{content:"▾"}
+details.tableview .tablewrap{margin-top:9px;max-height:280px;overflow-y:auto}
+details.tableview table.data{min-width:0;font-size:12px}
+
+/* ---------- Плашки-уведомления ---------- */
+.notice{
+  display:flex;gap:11px;align-items:flex-start;
+  padding:12px 14px;border-radius:var(--r);font-size:12.5px;line-height:1.5;
+  border:1px solid var(--hair);background:var(--surface);margin-bottom:16px;
+}
+.notice .ico{flex:none;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;margin-top:1px}
+.notice.demo{border-color:color-mix(in srgb,var(--warn) 55%,var(--hair))}
+.notice.demo .ico{background:var(--warn);color:#2a2000}
+.notice.info .ico{background:var(--accent)}
+.notice.bad{border-color:color-mix(in srgb,var(--crit) 45%,var(--hair))}
+.notice.bad .ico{background:var(--crit)}
+.notice b{font-weight:650}
+.notice .n-act{margin-left:auto;display:flex;gap:8px;flex:none}
+
+/* ---------- Пустое состояние / загрузка ---------- */
+.dropzone{
+  border:1.5px dashed var(--axis);border-radius:var(--r);background:var(--surface);
+  padding:34px 22px;text-align:center;
+}
+.dropzone.over{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,var(--surface))}
+.dropzone h2{font-size:18px;margin-bottom:6px}
+.dropzone p{font-size:13px;color:var(--ink-2);max-width:58ch;margin:0 auto 16px}
+.dropzone .dz-acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.dropzone .dz-fmt{font-size:11.5px;color:var(--muted);margin-top:14px}
+
+/* ---------- Диалоги ---------- */
+dialog{
+  border:1px solid var(--hair);border-radius:14px;background:var(--surface);color:var(--ink);
+  padding:0;max-width:min(860px,calc(100vw - 32px));width:100%;box-shadow:0 18px 50px rgba(0,0,0,.28);
+}
+dialog::backdrop{background:rgba(10,10,10,.5)}
+.dlg-head{
+  display:flex;align-items:center;gap:12px;padding:16px 18px 13px;border-bottom:1px solid var(--hair);
+  position:sticky;top:0;background:var(--surface);border-radius:14px 14px 0 0;z-index:2;
+}
+.dlg-head h3{margin:0;font-size:15px;font-weight:650}
+.dlg-head .x{margin-left:auto}
+.dlg-body{padding:16px 18px;max-height:min(70vh,620px);overflow:auto}
+.dlg-foot{
+  display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap;
+  padding:13px 18px;border-top:1px solid var(--hair);position:sticky;bottom:0;background:var(--surface);
+  border-radius:0 0 14px 14px;
+}
+.dlg-foot .left{margin-right:auto;display:flex;gap:9px;flex-wrap:wrap}
+.maprow{display:grid;grid-template-columns:minmax(150px,210px) minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--hair)}
+.maprow:last-of-type{border-bottom:0}
+.maprow .m-lbl{font-size:12.5px;font-weight:600}
+.maprow .m-lbl em{display:block;font-style:normal;font-weight:400;font-size:11px;color:var(--muted);margin-top:2px}
+.maprow .m-req{color:var(--crit);font-weight:700}
+.maprow .m-sample{font-size:11px;color:var(--muted);font-family:var(--mono);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;font-size:12px;
+  background:var(--surface-2);border:1px solid var(--hair);border-radius:999px;padding:4px 10px;cursor:pointer;
+}
+.chip input{margin:0;accent-color:var(--accent)}
+.chip.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--surface-2))}
+.cat-cand{display:flex;flex-direction:column;gap:2px;max-height:270px;overflow:auto;border:1px solid var(--hair);border-radius:8px;padding:8px}
+.cat-cand label{display:flex;gap:9px;align-items:center;font-size:12.5px;padding:4px 6px;border-radius:6px;cursor:pointer}
+.cat-cand label:hover{background:var(--surface-2)}
+.cat-cand .cnt{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums;font-size:11.5px}
+.hint{font-size:12px;color:var(--ink-2);line-height:1.55;margin:0 0 12px}
+.hint code{font-family:var(--mono);font-size:11.5px;background:var(--surface-2);border:1px solid var(--hair);border-radius:4px;padding:1px 4px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--hair);margin:0 0 14px}
+.tabs button{
+  background:none;border:0;border-bottom:2px solid transparent;padding:8px 11px;cursor:pointer;
+  font-size:12.5px;color:var(--ink-2);
+}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+.setrow{display:grid;grid-template-columns:minmax(160px,230px) minmax(0,1fr);gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--hair)}
+.setrow:last-child{border-bottom:0}
+.setrow .s-lbl{font-size:12.5px;font-weight:600}
+.setrow .s-lbl em{display:block;font-style:normal;font-weight:400;font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ---------- Подсказка при наведении ---------- */
+#tip{
+  position:fixed;z-index:80;pointer-events:none;opacity:0;transition:opacity .09s;
+  background:var(--surface);color:var(--ink);border:1px solid var(--hair-strong);
+  border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.5;
+  box-shadow:0 6px 22px rgba(0,0,0,.20);max-width:270px;
+}
+#tip.on{opacity:1}
+#tip b{display:block;font-size:12.5px;margin-bottom:3px;font-weight:650}
+#tip dl{margin:0;display:grid;grid-template-columns:auto auto;gap:2px 12px}
+#tip dt{color:var(--muted)}
+#tip dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+
+/* ---------- Сноски ---------- */
+.notes{font-size:12px;color:var(--ink-2);line-height:1.65;background:var(--surface);
+  border:1px solid var(--hair);border-radius:var(--r);padding:15px 17px}
+.notes h3{font-size:12.5px;font-weight:650;margin:0 0 8px;color:var(--ink)}
+.notes ul{margin:0;padding-left:18px}
+.notes li{margin-bottom:5px}
+.notes li:last-child{margin-bottom:0}
+.notes b{color:var(--ink)}
+
+/* ---------- Адаптив ---------- */
+@media (max-width:560px){
+  .topbar-in{padding-left:16px;padding-right:16px}
+  main{padding-left:16px;padding-right:16px}
+  .kpi .k-val{font-size:26px}
+  .maprow{grid-template-columns:1fr;gap:6px}
+  .maprow .m-sample{max-width:none}
+  .setrow{grid-template-columns:1fr;gap:6px}
+  .periodbar .p-note{margin-left:0;flex-basis:100%}
+}
+
+/* ---------- Печать ---------- */
+@media print{
+  :root{--plane:#fff;--surface:#fff;--surface-2:#fff;--surface-3:#eee;--ink:#000;--ink-2:#333;--hair:#ccc}
+  .topbar,.no-print,dialog,#tip{display:none!important}
+  main{max-width:none;padding:0}
+  .card,.kpi,.tablewrap,.ledger,.notes{break-inside:avoid;box-shadow:none}
+  details.tableview{display:none}
+  body{font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar no-print">
+  <div class="topbar-in">
+    <div class="brand">
+      <b>Зублефар</b>
+      <span>обращения · каталог ОПИК</span>
+    </div>
+    <div class="tools">
+      <button type="button" class="btn primary" id="btnLoad">Загрузить выгрузку</button>
+      <label class="sr-only" for="selPeriod" hidden>Период</label>
+      <select class="sel" id="selPeriod" title="Какой период считать предыдущим">
+        <option value="month">Предыдущий месяц</option>
+        <option value="week">Предыдущая неделя</option>
+        <option value="quarter">Предыдущий квартал</option>
+        <option value="day">Предыдущий день</option>
+      </select>
+      <button type="button" class="btn" id="btnCatalog">Каталог ОПИК</button>
+      <button type="button" class="btn" id="btnMap">Колонки</button>
+      <button type="button" class="btn" id="btnSettings">Настройки</button>
+      <button type="button" class="btn" id="btnExport">Сохранить</button>
+      <button type="button" class="btn ghost" id="btnTheme" title="Сменить тему" aria-label="Сменить тему">◐</button>
+    </div>
+  </div>
+</header>
+
+<input type="file" id="fileInput" accept=".csv,.tsv,.txt,.xlsx,.json" hidden>
+
+<main>
+  <div id="notices"></div>
+
+  <!-- ПУСТОЕ СОСТОЯНИЕ -->
+  <section id="empty" hidden>
+    <div class="dropzone" id="dropzone">
+      <h2>Перетащите сюда выгрузку из CRM</h2>
+      <p>Файл читается прямо в браузере и никуда не отправляется. Дашборд рассчитает усреднённые показатели за предыдущий период по тегам Каталога ОПИК.</p>
+      <div class="dz-acts">
+        <button type="button" class="btn primary" id="btnLoad2">Выбрать файл</button>
+        <button type="button" class="btn" id="btnDemo2">Показать на демо-данных</button>
+      </div>
+      <div class="dz-fmt">Поддерживаются CSV, TSV, XLSX и JSON. Кодировка UTF-8 и Windows-1251 определяются автоматически.</div>
+    </div>
+  </section>
+
+  <!-- ОТЧЁТ -->
+  <div id="report" hidden>
+
+    <div class="periodbar">
+      <span class="p-main" id="pMain">—</span>
+      <span class="p-range" id="pRange"></span>
+      <span class="p-note" id="pNote"></span>
+    </div>
+
+    <section id="secLedger">
+      <p class="eyebrow">Выгрузка</p>
+      <dl class="ledger" id="ledger"></dl>
+    </section>
+
+    <section id="secKpi">
+      <p class="eyebrow">Средние за период</p>
+      <div class="kpis" id="kpis"></div>
+    </section>
+
+    <section id="secCharts">
+      <p class="eyebrow">Разрезы</p>
+      <div class="grid2">
+
+        <div class="card" id="cardVolume">
+          <h3>Среднее число обращений в день</h3>
+          <p class="c-sub" id="subVolume">По тегам Каталога ОПИК</p>
+          <div class="bars" id="barsVolume"></div>
+          <ul class="legend"><li><i></i>обращений в день (среднее за период)</li></ul>
+          <details class="tableview"><summary>Показать таблицей</summary><div class="tablewrap" id="tblVolume"></div></details>
+        </div>
+
+        <div class="card" id="cardSolve">
+          <h3>Среднее время решения</h3>
+          <p class="c-sub" id="subSolve">По тегам Каталога ОПИК</p>
+          <div class="bars" id="barsSolve"></div>
+          <ul class="legend"><li><i class="s2"></i>среднее время решения</li></ul>
+          <details class="tableview"><summary>Показать таблицей</summary><div class="tablewrap" id="tblSolve"></div></details>
+        </div>
+
+        <div class="card" id="cardDaily">
+          <h3>Среднее время решения по дням периода</h3>
+          <p class="c-sub" id="subDaily">Каждая точка — среднее по обращениям, созданным в этот день</p>
+          <div id="lineDaily"></div>
+          <ul class="legend">
+            <li><i></i>среднее за день</li>
+            <li><i class="hair"></i>среднее за весь период</li>
+          </ul>
+          <details class="tableview"><summary>Показать таблицей</summary><div class="tablewrap" id="tblDaily"></div></details>
+        </div>
+
+        <div class="card" id="cardChannel">
+          <h3>Средняя дневная нагрузка по каналам</h3>
+          <p class="c-sub" id="subChannel">Обращений в день</p>
+          <div class="bars" id="barsChannel"></div>
+          <ul class="legend"><li><i></i>обращений в день (среднее за период)</li></ul>
+          <details class="tableview"><summary>Показать таблицей</summary><div class="tablewrap" id="tblChannel"></div></details>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="secTags">
+      <p class="eyebrow">Каталог ОПИК</p>
+      <h2>Средние показатели по тегам</h2>
+      <p class="sub" id="tagTableSub">Только теги, входящие в Каталог ОПИК. Все значения — средние за предыдущий период. Нажмите на заголовок столбца, чтобы отсортировать.</p>
+      <div class="tablewrap"><table class="data" id="tagTable"></table></div>
+    </section>
+
+    <section id="secNotes">
+      <div class="notes">
+        <h3>Как считаются показатели</h3>
+        <ul id="notesList"></ul>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<div id="tip" role="status" aria-live="polite"></div>
+
+<!-- ДИАЛОГ: сопоставление колонок -->
+<dialog id="dlgMap">
+  <div class="dlg-head">
+    <h3>Колонки выгрузки</h3>
+    <button type="button" class="btn ghost sm x" data-close="dlgMap">Закрыть</button>
+  </div>
+  <div class="dlg-body">
+    <p class="hint">Сопоставьте поля дашборда со столбцами вашей выгрузки. Обязательны только <b>дата создания</b> и <b>теги</b> — остальное включает дополнительные показатели, если данные есть.</p>
+    <div id="mapRows"></div>
+    <p class="lbl" style="margin-top:18px">Столбцы с тегами</p>
+    <p class="hint">Можно отметить несколько столбцов — теги из них объединяются. Значения внутри ячейки разделяются символами <code>;</code> <code>,</code> <code>|</code> или переводом строки.</p>
+    <div class="chips" id="tagColChips"></div>
+  </div>
+  <div class="dlg-foot">
+    <div class="left"><button type="button" class="btn" id="btnAutoMap">Определить автоматически</button></div>
+    <button type="button" class="btn" data-close="dlgMap">Отмена</button>
+    <button type="button" class="btn primary" id="btnApplyMap">Применить</button>
+  </div>
+</dialog>
+
+<!-- ДИАЛОГ: каталог ОПИК -->
+<dialog id="dlgCatalog">
+  <div class="dlg-head">
+    <h3>Каталог ОПИК</h3>
+    <button type="button" class="btn ghost sm x" data-close="dlgCatalog">Закрыть</button>
+  </div>
+  <div class="dlg-body">
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" aria-selected="true" data-tab="catList">Список</button>
+      <button type="button" role="tab" aria-selected="false" data-tab="catPick">Отобрать из выгрузки</button>
+    </div>
+
+    <div id="catList">
+      <p class="hint">Одна строка — один тег. Необязательный код отделяется вертикальной чертой: <code>ОПИК-04 | Возврат средств</code>. Аналитика строится <b>только</b> по этим тегам; всё остальное попадает в счётчик «вне каталога».</p>
+      <label class="lbl" for="catText">Теги каталога</label>
+      <textarea id="catText" rows="14" spellcheck="false" placeholder="ОПИК-01 | Подключение услуги&#10;ОПИК-02 | Ошибка в счёте"></textarea>
+      <p class="hint" id="catCount" style="margin-top:8px"></p>
+    </div>
+
+    <div id="catPick" hidden>
+      <p class="hint">Все значения тегов, встреченные в загруженной выгрузке. Отметьте те, что входят в Каталог ОПИК — отмеченные заменят текущий список.</p>
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <input type="search" id="catSearch" placeholder="Поиск по значению" style="flex:1;min-width:160px">
+        <button type="button" class="btn sm" id="btnPickAll">Отметить все</button>
+        <button type="button" class="btn sm" id="btnPickNone">Снять все</button>
+      </div>
+      <div class="cat-cand" id="catCand"></div>
+    </div>
+  </div>
+  <div class="dlg-foot">
+    <div class="left">
+      <button type="button" class="btn" id="btnCatImport">Импорт JSON/CSV</button>
+      <button type="button" class="btn" id="btnCatExport">Экспорт JSON</button>
+    </div>
+    <button type="button" class="btn" data-close="dlgCatalog">Отмена</button>
+    <button type="button" class="btn primary" id="btnCatApply">Сохранить каталог</button>
+  </div>
+</dialog>
+<input type="file" id="catFileInput" accept=".json,.csv,.txt" hidden>
+
+<!-- ДИАЛОГ: настройки -->
+<dialog id="dlgSettings">
+  <div class="dlg-head">
+    <h3>Настройки расчёта</h3>
+    <button type="button" class="btn ghost sm x" data-close="dlgSettings">Закрыть</button>
+  </div>
+  <div class="dlg-body">
+    <div class="setrow">
+      <div class="s-lbl">Точка отсчёта периода<em>От чего считается «предыдущий период»</em></div>
+      <select class="sel" id="setAnchor">
+        <option value="data">Последняя дата в выгрузке</option>
+        <option value="today">Сегодняшняя дата</option>
+      </select>
+    </div>
+    <div class="setrow">
+      <div class="s-lbl">Делитель для средних в день<em>На что делить число обращений</em></div>
+      <select class="sel" id="setDivisor">
+        <option value="calendar">Календарные дни периода</option>
+        <option value="covered">Дни, покрытые выгрузкой</option>
+      </select>
+    </div>
+    <div class="setrow">
+      <div class="s-lbl">Обращения без тегов ОПИК<em>Как поступать со строками, где нет ни одного тега каталога</em></div>
+      <select class="sel" id="setStrict">
+        <option value="exclude">Исключать из всех расчётов</option>
+        <option value="keep">Учитывать в общих средних, но не в разрезах по тегам</option>
+      </select>
+    </div>
+    <div class="setrow">
+      <div class="s-lbl">Обращение с несколькими тегами<em>Как распределять его между тегами</em></div>
+      <select class="sel" id="setMulti">
+        <option value="full">Считать целиком в каждый тег</option>
+        <option value="split">Делить поровну между тегами</option>
+      </select>
+    </div>
+    <div class="setrow">
+      <div class="s-lbl">Единица длительности<em>Если время решения приходит числом в отдельном столбце</em></div>
+      <select class="sel" id="setDurUnit">
+        <option value="auto">Определять автоматически</option>
+        <option value="minutes">Минуты</option>
+        <option value="hours">Часы</option>
+        <option value="days">Дни</option>
+        <option value="seconds">Секунды</option>
+      </select>
+    </div>
+    <div class="setrow">
+      <div class="s-lbl">Формат даты<em>Порядок дня и месяца в неоднозначных датах</em></div>
+      <select class="sel" id="setDateOrder">
+        <option value="dmy">Сначала день (31.08.2026)</option>
+        <option value="mdy">Сначала месяц (08/31/2026)</option>
+      </select>
+    </div>
+    <div class="setrow">
+      <div class="s-lbl">Тегов в разрезах<em>Сколько строк показывать на графиках</em></div>
+      <select class="sel" id="setTopN">
+        <option value="6">6</option><option value="8">8</option><option value="10">10</option>
+        <option value="12">12</option><option value="999">Все</option>
+      </select>
+    </div>
+    <div class="setrow">
+      <div class="s-lbl">Штриховка заливок<em>Для печати и монохромных экранов</em></div>
+      <select class="sel" id="setTexture">
+        <option value="off">Выключена</option>
+        <option value="on">Включена</option>
+      </select>
+    </div>
+  </div>
+  <div class="dlg-foot">
+    <div class="left"><button type="button" class="btn" id="btnResetAll">Сбросить всё</button></div>
+    <button type="button" class="btn primary" data-close="dlgSettings">Готово</button>
+  </div>
+</dialog>
+
+<!-- ДИАЛОГ: сохранение -->
+<dialog id="dlgExport">
+  <div class="dlg-head">
+    <h3>Сохранить</h3>
+    <button type="button" class="btn ghost sm x" data-close="dlgExport">Закрыть</button>
+  </div>
+  <div class="dlg-body">
+    <p class="hint">Дашборд — один самодостаточный HTML-файл. Он работает из папки на диске, без интернета и без установки: откройте его двойным щелчком в любом браузере.</p>
+    <div class="setrow">
+      <div class="s-lbl">Дашборд с настройками<em>Каталог ОПИК, сопоставление колонок и настройки внутри файла. Данных нет</em></div>
+      <button type="button" class="btn" id="btnSaveClean">Скачать HTML</button>
+    </div>
+    <div class="setrow">
+      <div class="s-lbl">Дашборд вместе с данными<em>Тот же файл плюс загруженная выгрузка: открывается сразу с отчётом</em></div>
+      <button type="button" class="btn" id="btnSaveData">Скачать HTML с данными</button>
+    </div>
+    <div class="setrow">
+      <div class="s-lbl">Таблица показателей<em>Средние по тегам ОПИК за период, CSV для Excel</em></div>
+      <button type="button" class="btn" id="btnSaveCsv">Скачать CSV</button>
+    </div>
+    <div class="setrow">
+      <div class="s-lbl">Печать или PDF<em>Раскладка на страницу, без панели управления</em></div>
+      <button type="button" class="btn" id="btnPrint">Открыть печать</button>
+    </div>
+  </div>
+</dialog>
+
+<script id="zfConfig" type="application/json">null</script>
+<script id="zfData" type="application/json">null</script>
+<script>
+"use strict";
+(function(){
+
+/* ============================================================
+   1. МЕЛКИЕ УТИЛИТЫ
+   ============================================================ */
+var $  = function(s,r){ return (r||document).querySelector(s); };
+var $$ = function(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
+
+function esc(s){
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+function fmtNum(n,d){
+  if(n==null||!isFinite(n)) return '—';
+  d = d==null?1:d;
+  return n.toLocaleString('ru-RU',{minimumFractionDigits:d,maximumFractionDigits:d});
+}
+function plural(n,forms){
+  var a = Math.abs(Math.round(n))%100, b = a%10;
+  if(a>10&&a<20) return forms[2];
+  if(b>1&&b<5)   return forms[1];
+  if(b===1)      return forms[0];
+  return forms[2];
+}
+/* Единая единица длительности для всего графика — иначе столбики
+   нельзя сравнивать глазом. */
+function unitFor(maxHours){
+  if(maxHours==null||!isFinite(maxHours)||maxHours<=0) return {div:1,suf:'ч',dec:1};
+  if(maxHours < 1.5)  return {div:1/60, suf:'мин', dec:0};
+  if(maxHours < 72)   return {div:1,    suf:'ч',   dec:1};
+  return                     {div:24,   suf:'дн',  dec:1};
+}
+function fmtIn(h,u){ return h==null||!isFinite(h) ? '—' : fmtNum(h/u.div,u.dec)+' '+u.suf; }
+function fmtHours(h){
+  if(h==null||!isFinite(h)) return '—';
+  if(h<1)  return fmtNum(h*60,0)+' мин';
+  if(h<72) return fmtNum(h,1)+' ч';
+  return fmtNum(h/24,1)+' дн';
+}
+function mean(arr){ if(!arr.length) return null; var s=0,i; for(i=0;i<arr.length;i++) s+=arr[i]; return s/arr.length; }
+function median(arr){
+  if(!arr.length) return null;
+  var a = arr.slice().sort(function(x,y){return x-y;}), m = a.length>>1;
+  return a.length%2 ? a[m] : (a[m-1]+a[m])/2;
+}
+function d2(n){ return n<10?'0'+n:''+n; }
+function fmtDate(d){ return d ? d2(d.getDate())+'.'+d2(d.getMonth()+1)+'.'+d.getFullYear() : '—'; }
+function fmtDateShort(d){ return d ? d2(d.getDate())+'.'+d2(d.getMonth()+1) : '—'; }
+function dayKey(d){ return d.getFullYear()+'-'+d2(d.getMonth()+1)+'-'+d2(d.getDate()); }
+function startOfDay(d){ return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
+function addDays(d,n){ return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n); }
+var MONTHS_N = ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+var MONTHS_G = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+var ROMAN = ['I','II','III','IV'];
+
+/* ============================================================
+   2. РАЗБОР ЗНАЧЕНИЙ
+   ============================================================ */
+function excelSerialToDate(n){
+  var ms = Date.UTC(1899,11,30) + Math.round(n*86400000);
+  var d = new Date(ms);
+  return new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate(),
+                  d.getUTCHours(),d.getUTCMinutes(),d.getUTCSeconds());
+}
+function parseDate(v,order){
+  if(v==null||v==='') return null;
+  if(v instanceof Date) return isNaN(v.getTime())?null:v;
+  if(typeof v==='number'){
+    if(v>20000 && v<80000) return excelSerialToDate(v);
+    if(v>1e11) return new Date(v);
+    return null;
+  }
+  var s = String(v).trim();
+  if(!s) return null;
+  var m;
+  /* ISO: 2026-08-31 / 2026-08-31T12:30:00 */
+  m = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T ](\d{1,2}):(\d{2})(?::(\d{2}))?)?/.exec(s);
+  if(m) return new Date(+m[1],+m[2]-1,+m[3],+(m[4]||0),+(m[5]||0),+(m[6]||0));
+  /* 31.08.2026 12:30 / 31/08/2026 / 8-31-2026 */
+  m = /^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2,4})(?:[T ,]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/.exec(s);
+  if(m){
+    var a=+m[1], b=+m[2], y=+m[3];
+    if(y<100) y += y<70 ? 2000 : 1900;
+    var day, mon;
+    if(a>12)      { day=a; mon=b; }
+    else if(b>12) { day=b; mon=a; }
+    else if(order==='mdy'){ day=b; mon=a; }
+    else          { day=a; mon=b; }
+    return new Date(y,mon-1,day,+(m[4]||0),+(m[5]||0),+(m[6]||0));
+  }
+  /* Чистое число в текстовом виде — вероятно, серийная дата Excel */
+  if(/^\d+([.,]\d+)?$/.test(s)){
+    var num = parseFloat(s.replace(',','.'));
+    if(num>20000 && num<80000) return excelSerialToDate(num);
+  }
+  var t = Date.parse(s);
+  return isNaN(t) ? null : new Date(t);
+}
+/* Возвращает длительность в часах. */
+function parseDuration(v,unit){
+  if(v==null||v==='') return null;
+  if(typeof v==='number') return applyUnit(v,unit);
+  var s = String(v).trim().toLowerCase().replace(/ /g,' ');
+  if(!s) return null;
+  var m;
+  /* 12:34 или 12:34:56 */
+  m = /^(\d+):(\d{1,2})(?::(\d{1,2}))?$/.exec(s);
+  if(m) return (+m[1]) + (+m[2])/60 + (+(m[3]||0))/3600;
+  /* 2 д 3 ч 15 мин */
+  var total=0, hit=false, re=/(\d+(?:[.,]\d+)?)\s*(дн|д|сут|ч|час|мин|м|сек|с)\b/g, x;
+  while((x=re.exec(s))){
+    hit = true;
+    var n = parseFloat(x[1].replace(',','.'));
+    var u = x[2];
+    if(u==='дн'||u==='д'||u==='сут') total += n*24;
+    else if(u==='ч'||u==='час')      total += n;
+    else if(u==='мин'||u==='м')      total += n/60;
+    else                             total += n/3600;
+  }
+  if(hit) return total;
+  if(/^-?\d+([.,]\d+)?$/.test(s)) return applyUnit(parseFloat(s.replace(',','.')),unit);
+  return null;
+}
+function applyUnit(n,unit){
+  if(n==null||!isFinite(n)) return null;
+  switch(unit){
+    case 'seconds': return n/3600;
+    case 'minutes': return n/60;
+    case 'hours':   return n;
+    case 'days':    return n*24;
+    default:
+      /* auto: крупные числа читаем как минуты, очень крупные — как секунды */
+      if(n>100000) return n/3600;
+      if(n>240)    return n/60;
+      return n;
+  }
+}
+function parseNumber(v){
+  if(v==null||v==='') return null;
+  if(typeof v==='number') return isFinite(v)?v:null;
+  var s = String(v).trim().replace(/\s| /g,'').replace(',','.');
+  if(!/^-?\d+(\.\d+)?$/.test(s)) return null;
+  var n = parseFloat(s);
+  return isFinite(n)?n:null;
+}
+function parseFlag(v){
+  if(v==null||v==='') return null;
+  if(typeof v==='number') return v>0?1:0;
+  var s = String(v).trim().toLowerCase();
+  if(!s) return null;
+  if(/^(да|yes|true|истина|1|\+|есть)$/.test(s)) return 1;
+  if(/^(нет|no|false|ложь|0|-|—)$/.test(s)) return 0;
+  var n = parseNumber(s);
+  return n==null ? null : (n>0?1:0);
+}
+
+/* ============================================================
+   3. ЧТЕНИЕ ФАЙЛОВ
+   ============================================================ */
+function decodeBytes(buf){
+  var u8 = new Uint8Array(buf);
+  if(u8.length>=3 && u8[0]===0xEF && u8[1]===0xBB && u8[2]===0xBF)
+    return new TextDecoder('utf-8').decode(u8.subarray(3));
+  try {
+    return new TextDecoder('utf-8',{fatal:true}).decode(u8);
+  } catch(e){
+    try { return new TextDecoder('windows-1251').decode(u8); }
+    catch(e2){ return new TextDecoder('utf-8').decode(u8); }
+  }
+}
+function detectDelimiter(text){
+  var head = text.split(/\r?\n/).slice(0,8).join('\n');
+  var cands = [';','\t',',','|'], best=',', bestN=-1;
+  cands.forEach(function(c){
+    var n = head.split(c).length-1;
+    if(n>bestN){ bestN=n; best=c; }
+  });
+  return bestN>0 ? best : ',';
+}
+function parseCSV(text,delim){
+  var rows=[], row=[], cell='', i=0, inQ=false, ch, nx;
+  text = text.replace(/^﻿/,'');
+  while(i<text.length){
+    ch = text[i];
+    if(inQ){
+      if(ch==='"'){
+        nx = text[i+1];
+        if(nx==='"'){ cell+='"'; i+=2; continue; }
+        inQ=false; i++; continue;
+      }
+      cell+=ch; i++; continue;
+    }
+    if(ch==='"'){ inQ=true; i++; continue; }
+    if(ch===delim){ row.push(cell); cell=''; i++; continue; }
+    if(ch==='\r'){ i++; continue; }
+    if(ch==='\n'){ row.push(cell); rows.push(row); row=[]; cell=''; i++; continue; }
+    cell+=ch; i++;
+  }
+  if(cell!==''||row.length){ row.push(cell); rows.push(row); }
+  return rows.filter(function(r){ return r.some(function(c){ return String(c).trim()!==''; }); });
+}
+
+/* --- XLSX: минимальный ZIP-ридер + разбор SheetML --- */
+function inflateRaw(bytes){
+  if(typeof DecompressionStream==='undefined')
+    return Promise.reject(new Error('Браузер не умеет распаковывать XLSX. Сохраните выгрузку в CSV.'));
+  var ds = new DecompressionStream('deflate-raw');
+  var stream = new Blob([bytes]).stream().pipeThrough(ds);
+  return new Response(stream).arrayBuffer().then(function(ab){ return new Uint8Array(ab); });
+}
+function zipEntries(buf){
+  var u8 = new Uint8Array(buf), dv = new DataView(buf), i, eocd=-1;
+  for(i=u8.length-22; i>=Math.max(0,u8.length-66000); i--){
+    if(dv.getUint32(i,true)===0x06054b50){ eocd=i; break; }
+  }
+  if(eocd<0) throw new Error('Файл не похож на XLSX.');
+  var count = dv.getUint16(eocd+10,true), off = dv.getUint32(eocd+16,true), out = {};
+  var dec = new TextDecoder('utf-8');
+  for(i=0;i<count;i++){
+    if(dv.getUint32(off,true)!==0x02014b50) break;
+    var method  = dv.getUint16(off+10,true),
+        compSz  = dv.getUint32(off+20,true),
+        nameLen = dv.getUint16(off+28,true),
+        extraLen= dv.getUint16(off+30,true),
+        cmtLen  = dv.getUint16(off+32,true),
+        lho     = dv.getUint32(off+42,true);
+    var name = dec.decode(u8.subarray(off+46, off+46+nameLen));
+    var lNameLen = dv.getUint16(lho+26,true), lExtraLen = dv.getUint16(lho+28,true);
+    var start = lho+30+lNameLen+lExtraLen;
+    out[name] = { method:method, data:u8.subarray(start,start+compSz) };
+    off += 46+nameLen+extraLen+cmtLen;
+  }
+  return out;
+}
+function zipText(entries,name){
+  var e = entries[name];
+  if(!e) return Promise.resolve(null);
+  if(e.method===0) return Promise.resolve(new TextDecoder('utf-8').decode(e.data));
+  return inflateRaw(e.data).then(function(u){ return new TextDecoder('utf-8').decode(u); });
+}
+function xml(text){ return new DOMParser().parseFromString(text,'application/xml'); }
+function colIndex(ref){
+  var s = String(ref).replace(/[^A-Z]/gi,'').toUpperCase(), n=0, i;
+  for(i=0;i<s.length;i++) n = n*26 + (s.charCodeAt(i)-64);
+  return n-1;
+}
+function dateStyleSet(stylesXml){
+  var set = {};
+  if(!stylesXml) return set;
+  var doc = xml(stylesXml);
+  var custom = {};
+  $$('numFmt',doc).forEach(function(n){
+    var id = n.getAttribute('numFmtId'), code = n.getAttribute('formatCode')||'';
+    var stripped = code.replace(/\[[^\]]*\]/g,'').replace(/"[^"]*"/g,'');
+    custom[id] = /[dmyh]/i.test(stripped) && !/^general$/i.test(stripped.trim());
+  });
+  var builtin = {14:1,15:1,16:1,17:1,18:1,19:1,20:1,21:1,22:1,45:1,46:1,47:1};
+  var xfs = $$('cellXfs > xf',doc);
+  xfs.forEach(function(xf,i){
+    var id = xf.getAttribute('numFmtId');
+    set[i] = !!(builtin[id] || custom[id]);
+  });
+  return set;
+}
+function readXlsx(buf){
+  var entries = zipEntries(buf), shared = [], dateStyles = {};
+  return zipText(entries,'xl/sharedStrings.xml').then(function(ss){
+    if(ss){
+      $$('si',xml(ss)).forEach(function(si){
+        shared.push($$('t',si).map(function(t){return t.textContent;}).join(''));
+      });
+    }
+    return zipText(entries,'xl/styles.xml');
+  }).then(function(st){
+    dateStyles = dateStyleSet(st);
+    return zipText(entries,'xl/workbook.xml');
+  }).then(function(wb){
+    var target = 'xl/worksheets/sheet1.xml';
+    var names = Object.keys(entries).filter(function(n){ return /^xl\/worksheets\/sheet\d+\.xml$/.test(n); })
+                                    .sort();
+    if(names.length) target = names[0];
+    if(wb){
+      var relsP = zipText(entries,'xl/_rels/workbook.xml.rels');
+      return relsP.then(function(rels){
+        try{
+          var sheet = $$('sheets > sheet',xml(wb))[0];
+          if(sheet && rels){
+            var rid = sheet.getAttribute('r:id') || sheet.getAttribute('id');
+            var rel = $$('Relationship',xml(rels)).filter(function(r){ return r.getAttribute('Id')===rid; })[0];
+            if(rel){
+              var t = rel.getAttribute('Target').replace(/^\/?xl\//,'').replace(/^\.\//,'');
+              if(entries['xl/'+t]) target = 'xl/'+t;
+            }
+          }
+        }catch(e){}
+        return zipText(entries,target);
+      });
+    }
+    return zipText(entries,target);
+  }).then(function(sheetXml){
+    if(!sheetXml) throw new Error('В книге не найден лист с данными.');
+    var doc = xml(sheetXml), grid = [];
+    $$('row',doc).forEach(function(r){
+      var arr = [];
+      $$('c',r).forEach(function(c){
+        var idx = colIndex(c.getAttribute('r')||''), t = c.getAttribute('t'),
+            sIdx = c.getAttribute('s'), val = null;
+        if(t==='inlineStr'){
+          val = $$('t',c).map(function(x){return x.textContent;}).join('');
+        } else {
+          var vEl = c.getElementsByTagName('v')[0];
+          var raw = vEl ? vEl.textContent : null;
+          if(raw==null) val = null;
+          else if(t==='s') val = shared[+raw]!==undefined ? shared[+raw] : '';
+          else if(t==='b') val = raw==='1' ? 'да' : 'нет';
+          else if(t==='str'||t==='e') val = raw;
+          else {
+            var num = parseFloat(raw);
+            if(isFinite(num) && sIdx!=null && dateStyles[+sIdx]) val = excelSerialToDate(num).toISOString();
+            else val = isFinite(num) ? num : raw;
+          }
+        }
+        if(idx<0) idx = arr.length;
+        arr[idx] = val;
+      });
+      grid.push(arr);
+    });
+    return grid;
+  });
+}
+function gridToRows(grid){
+  var hi = 0, i;
+  for(i=0;i<Math.min(grid.length,25);i++){
+    var filled = (grid[i]||[]).filter(function(c){ return c!=null && String(c).trim()!==''; }).length;
+    if(filled>=2){ hi=i; break; }
+  }
+  var headRaw = grid[hi]||[], seen = {}, headers = [];
+  headRaw.forEach(function(h,j){
+    var name = String(h==null?'':h).trim() || ('Столбец '+(j+1));
+    if(seen[name]){ seen[name]++; name = name+' ('+seen[name]+')'; } else seen[name]=1;
+    headers.push(name);
+  });
+  var rows = [];
+  for(i=hi+1;i<grid.length;i++){
+    var g = grid[i]||[], o = {}, any=false;
+    headers.forEach(function(h,j){
+      var v = g[j];
+      if(v==null) v='';
+      if(typeof v==='string') v = v.trim();
+      o[h]=v;
+      if(v!=='') any=true;
+    });
+    if(any) rows.push(o);
+  }
+  return {headers:headers, rows:rows};
+}
+
+/* ============================================================
+   4. СОСТОЯНИЕ И НАСТРОЙКИ
+   ============================================================ */
+var LS_KEY = 'zublefar.dashboard.v1';
+
+var FIELDS = [
+  {k:'id',      label:'Идентификатор',            hint:'Номер обращения',                    syn:['номер обращения','id обращения','номер заявки','номер тикета','идентификатор','номер','ticket id','case id','№']},
+  {k:'created', label:'Дата создания',   req:true, hint:'Когда обращение зарегистрировано',   syn:['дата создания','дата регистрации','дата обращения','дата поступления','дата открытия','создано','зарегистрировано','created','opened','open date','дата']},
+  {k:'closed',  label:'Дата закрытия',             hint:'Когда обращение закрыто',            syn:['дата закрытия','дата решения','дата завершения','закрыто','решено','завершено','closed','resolved']},
+  {k:'first',   label:'Дата первого ответа',       hint:'Когда клиент получил первый ответ',  syn:['дата первого ответа','первый ответ','время первой реакции','дата реакции','first response','first reply']},
+  {k:'solveDur',label:'Время решения',             hint:'Если длительность уже посчитана CRM', syn:['время решения','срок решения','длительность решения','время обработки','время в работе','handle time','resolution time','duration']},
+  {k:'firstDur',label:'Время первого ответа',      hint:'Если длительность уже посчитана CRM', syn:['время первого ответа','время реакции','время до ответа','time to first response']},
+  {k:'channel', label:'Канал',                     hint:'Источник обращения',                 syn:['канал','канал обращения','источник','способ обращения','channel','source']},
+  {k:'owner',   label:'Ответственный',             hint:'Исполнитель или группа',             syn:['ответственный','исполнитель','оператор','агент','специалист','сотрудник','менеджер','owner','assignee','группа']},
+  {k:'status',  label:'Статус',                    hint:'Текущее состояние',                  syn:['статус','состояние','status','state']},
+  {k:'csat',    label:'Оценка',                    hint:'Числовая оценка клиента',            syn:['оценка','оценка клиента','csat','удовлетворённость','удовлетворенность','рейтинг','балл','score']},
+  {k:'reopen',  label:'Повторные открытия',        hint:'Число или признак переоткрытия',     syn:['переоткрытие','повторное открытие','возврат в работу','повторных','reopen','reopened']}
+];
+var TAG_COL_RE = /тег|tag|категор|categor|тема|классиф|направлен|опик|opik|вид обращ|тип обращ|услуг/i;
+
+function defaults(){
+  return {
+    version:1, catalog:[], mapping:{}, tagColumns:[],
+    settings:{ gran:'month', anchor:'data', divisor:'calendar', strict:'exclude',
+               multi:'full', durUnit:'auto', dateOrder:'dmy', topN:8, texture:'off', theme:'system' }
+  };
+}
+var S = {
+  cfg: defaults(),
+  fileName:'', headers:[], rows:[], isDemo:false,
+  view:null, tagSort:{key:'perDay',dir:-1}, catPickSel:null
+};
+
+function loadStored(){
+  try{
+    var raw = localStorage.getItem(LS_KEY);
+    if(!raw) return null;
+    return JSON.parse(raw);
+  }catch(e){ return null; }
+}
+function saveStored(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(S.cfg)); }catch(e){}
+}
+function mergeCfg(src){
+  if(!src||typeof src!=='object') return;
+  if(Array.isArray(src.catalog))    S.cfg.catalog = src.catalog;
+  if(src.mapping&&typeof src.mapping==='object') S.cfg.mapping = src.mapping;
+  if(Array.isArray(src.tagColumns)) S.cfg.tagColumns = src.tagColumns;
+  if(src.settings&&typeof src.settings==='object'){
+    Object.keys(S.cfg.settings).forEach(function(k){
+      if(src.settings[k]!==undefined) S.cfg.settings[k]=src.settings[k];
+    });
+  }
+}
+
+/* ============================================================
+   5. КАТАЛОГ ОПИК
+   ============================================================ */
+function normTag(s){
+  return String(s==null?'':s)
+    .toLowerCase()
+    .replace(/ё/g,'е')
+    .replace(/[«»"'`]/g,'')
+    .replace(/[\s ]+/g,' ')
+    .replace(/[.,;:]+$/,'')
+    .trim();
+}
+function parseCatalogText(text){
+  var out=[], seen={};
+  String(text||'').split(/\r?\n/).forEach(function(line){
+    var s = line.trim();
+    if(!s || /^[#;]/.test(s)) return;
+    var code='', name=s, parts;
+    if(s.indexOf('|')>=0){
+      parts = s.split('|');
+      code = parts[0].trim();
+      name = parts.slice(1).join('|').trim();
+    } else {
+      /* «ОПИК-04 Возврат средств» / «04. Возврат средств» */
+      var m = /^([A-Za-zА-Яа-я]{0,8}[-_ ]?\d{1,4})[.)\s]+(.+)$/.exec(s);
+      if(m && m[2].length>2){ code=m[1].trim(); name=m[2].trim(); }
+    }
+    if(!name) return;
+    var key = normTag(name);
+    if(!key || seen[key]) return;
+    seen[key]=1;
+    out.push({code:code, name:name});
+  });
+  return out;
+}
+function catalogToText(cat){
+  return (cat||[]).map(function(e){ return e.code ? e.code+' | '+e.name : e.name; }).join('\n');
+}
+function catalogIndex(){
+  var idx = {};
+  (S.cfg.catalog||[]).forEach(function(e){
+    idx[normTag(e.name)] = e;
+    if(e.code) idx[normTag(e.code)] = e;
+  });
+  return idx;
+}
+function splitTagCell(v){
+  if(v==null) return [];
+  return String(v).split(/[;|\n\r]+|,(?![^(]*\))/)
+    .map(function(s){ return s.trim(); })
+    .filter(function(s){ return s!==''; });
+}
+
+/* ============================================================
+   6. СОПОСТАВЛЕНИЕ КОЛОНОК
+   ============================================================ */
+function autoMap(headers){
+  var pairs=[], mapping={}, usedH={}, usedF={};
+  headers.forEach(function(h){
+    var nh = normTag(h);
+    FIELDS.forEach(function(f){
+      var best=0;
+      f.syn.forEach(function(s){
+        var ns = normTag(s);
+        if(nh===ns) best = Math.max(best, ns.length+100);
+        else if(nh.indexOf(ns)>=0) best = Math.max(best, ns.length + (nh.indexOf(ns)===0?12:0));
+      });
+      if(best>0) pairs.push({h:h,f:f.k,score:best});
+    });
+  });
+  pairs.sort(function(a,b){ return b.score-a.score; });
+  pairs.forEach(function(p){
+    if(usedH[p.h]||usedF[p.f]) return;
+    usedH[p.h]=1; usedF[p.f]=1; mapping[p.f]=p.h;
+  });
+  /* Запасной вариант для даты создания: первый столбец, который разбирается как дата */
+  if(!mapping.created){
+    for(var i=0;i<headers.length;i++){
+      var h=headers[i];
+      if(usedH[h]) continue;
+      var ok=0, tried=0;
+      for(var j=0;j<S.rows.length && tried<25;j++){
+        var v=S.rows[j][h];
+        if(v===''||v==null) continue;
+        tried++;
+        if(parseDate(v,S.cfg.settings.dateOrder)) ok++;
+      }
+      if(tried>=3 && ok/tried>0.8){ mapping.created=h; usedH[h]=1; break; }
+    }
+  }
+  var tagCols = headers.filter(function(h){ return TAG_COL_RE.test(h) && h!==mapping.status; });
+  return {mapping:mapping, tagColumns:tagCols};
+}
+
+/* ============================================================
+   7. ПЕРИОД
+   ============================================================ */
+function periodFor(anchorDate,gran){
+  var y=anchorDate.getFullYear(), m=anchorDate.getMonth(), start, end, label, sub;
+  if(gran==='month'){
+    start = new Date(y,m-1,1);
+    end   = new Date(y,m,1,0,0,0,-1);
+    label = MONTHS_N[start.getMonth()].replace(/^./,function(c){return c.toUpperCase();})+' '+start.getFullYear();
+  } else if(gran==='quarter'){
+    var q = Math.floor(m/3);
+    start = new Date(y,(q-1)*3,1);
+    end   = new Date(y,q*3,1,0,0,0,-1);
+    label = ROMAN[Math.floor(start.getMonth()/3)]+' квартал '+start.getFullYear();
+  } else if(gran==='week'){
+    var cur = startOfDay(anchorDate);
+    var dow = (cur.getDay()+6)%7;            /* понедельник = 0 */
+    var curStart = addDays(cur,-dow);
+    start = addDays(curStart,-7);
+    end   = new Date(curStart.getFullYear(),curStart.getMonth(),curStart.getDate(),0,0,0,-1);
+    label = 'Неделя '+fmtDateShort(start)+' – '+fmtDateShort(addDays(start,6));
+  } else {
+    start = addDays(startOfDay(anchorDate),-1);
+    end   = new Date(start.getFullYear(),start.getMonth(),start.getDate()+1,0,0,0,-1);
+    label = start.getDate()+' '+MONTHS_G[start.getMonth()]+' '+start.getFullYear();
+  }
+  sub = fmtDate(start)+' – '+fmtDate(end);
+  var days = Math.round((startOfDay(end)-startOfDay(start))/86400000)+1;
+  return {start:start, end:end, label:label, range:sub, days:days};
+}
+
+/* ============================================================
+   8. АГРЕГАЦИЯ
+   ============================================================ */
+function buildTickets(){
+  var m = S.cfg.mapping, st = S.cfg.settings, idx = catalogIndex(),
+      cols = S.cfg.tagColumns || [], out = [], outsideCount = 0,
+      outsideSet = {}, insideSet = {}, noTagRows = 0;
+
+  S.rows.forEach(function(r){
+    var created = m.created ? parseDate(r[m.created],st.dateOrder) : null;
+    if(!created) return;
+    var closed = m.closed ? parseDate(r[m.closed],st.dateOrder) : null;
+    var first  = m.first  ? parseDate(r[m.first], st.dateOrder) : null;
+
+    var solveH = m.solveDur ? parseDuration(r[m.solveDur],st.durUnit) : null;
+    if(solveH==null && closed) solveH = (closed-created)/3600000;
+    if(solveH!=null && (solveH<0 || solveH>24*400)) solveH = null;
+
+    var firstH = m.firstDur ? parseDuration(r[m.firstDur],st.durUnit) : null;
+    if(firstH==null && first) firstH = (first-created)/3600000;
+    if(firstH!=null && (firstH<0 || firstH>24*400)) firstH = null;
+
+    var raw = [];
+    cols.forEach(function(c){ raw = raw.concat(splitTagCell(r[c])); });
+    var tags = [], outs = [], seen = {};
+    raw.forEach(function(t){
+      var k = normTag(t);
+      if(!k) return;
+      var e = idx[k];
+      if(e){
+        if(!seen['in:'+normTag(e.name)]){ seen['in:'+normTag(e.name)]=1; tags.push(e); insideSet[e.name]=(insideSet[e.name]||0)+1; }
+      } else {
+        if(!seen['out:'+k]){ seen['out:'+k]=1; outs.push(t); outsideSet[t]=(outsideSet[t]||0)+1; }
+      }
+    });
+    if(!raw.length) noTagRows++;
+    if(outs.length) outsideCount++;
+
+    out.push({
+      id: m.id ? r[m.id] : '',
+      created:created, closed:closed,
+      solveH:solveH, firstH:firstH,
+      tags:tags, outs:outs, hasRaw:raw.length>0,
+      channel: m.channel ? (String(r[m.channel]||'').trim() || '—') : null,
+      owner:   m.owner   ? (String(r[m.owner]  ||'').trim() || '—') : null,
+      status:  m.status  ? (String(r[m.status] ||'').trim() || '—') : null,
+      csat:    m.csat    ? parseNumber(r[m.csat]) : null,
+      reopen:  m.reopen  ? parseFlag(r[m.reopen]) : null
+    });
+  });
+  return {tickets:out, outsideCount:outsideCount, outsideSet:outsideSet,
+          insideSet:insideSet, noTagRows:noTagRows};
+}
+
+function computeView(){
+  var st = S.cfg.settings;
+  var built = buildTickets();
+  var all = built.tickets;
+  if(!all.length) return {empty:'nodates', built:built};
+
+  var minD=null, maxD=null;
+  all.forEach(function(t){
+    if(!minD||t.created<minD) minD=t.created;
+    if(!maxD||t.created>maxD) maxD=t.created;
+  });
+  var anchor = st.anchor==='today' ? new Date() : maxD;
+  var P = periodFor(anchor, st.gran);
+
+  var inPeriod = all.filter(function(t){ return t.created>=P.start && t.created<=P.end; });
+
+  /* Покрытие периода выгрузкой */
+  var covStart = minD>P.start ? minD : P.start;
+  var covEnd   = maxD<P.end   ? maxD : P.end;
+  var covDays  = covEnd>=covStart ? Math.round((startOfDay(covEnd)-startOfDay(covStart))/86400000)+1 : 0;
+  var divisor  = st.divisor==='covered' ? Math.max(covDays,1) : P.days;
+
+  /* Строки без единого тега каталога */
+  var kept = st.strict==='exclude'
+      ? inPeriod.filter(function(t){ return t.tags.length>0; })
+      : inPeriod;
+  var droppedNoCat = inPeriod.length - kept.length;
+
+  var solveArr=[], firstArr=[], csatArr=[], tagCounts=[], reopenArr=[];
+  kept.forEach(function(t){
+    if(t.solveH!=null) solveArr.push(t.solveH);
+    if(t.firstH!=null) firstArr.push(t.firstH);
+    if(t.csat!=null)   csatArr.push(t.csat);
+    if(t.reopen!=null) reopenArr.push(t.reopen);
+    tagCounts.push(t.tags.length);
+  });
+
+  /* По тегам каталога */
+  var byTag = {};
+  kept.forEach(function(t){
+    var w = (st.multi==='split' && t.tags.length>1) ? 1/t.tags.length : 1;
+    t.tags.forEach(function(e){
+      var key = e.name;
+      var a = byTag[key] || (byTag[key]={code:e.code,name:e.name,vol:0,n:0,solve:[],first:[],csat:[]});
+      a.vol += w; a.n += 1;
+      if(t.solveH!=null) a.solve.push(t.solveH);
+      if(t.firstH!=null) a.first.push(t.firstH);
+      if(t.csat!=null)   a.csat.push(t.csat);
+    });
+  });
+  var volTotal = 0;
+  Object.keys(byTag).forEach(function(k){ volTotal += byTag[k].vol; });
+  var tagRows = Object.keys(byTag).map(function(k){
+    var a = byTag[k];
+    return {
+      code:a.code, name:a.name, n:a.n, vol:a.vol,
+      perDay: a.vol/divisor,
+      share:  volTotal>0 ? a.vol/volTotal*100 : null,
+      solve:  mean(a.solve), solveMed: median(a.solve),
+      first:  mean(a.first),
+      csat:   mean(a.csat)
+    };
+  });
+
+  /* По каналам */
+  var byCh = {};
+  if(S.cfg.mapping.channel){
+    kept.forEach(function(t){
+      var key = t.channel||'—';
+      var a = byCh[key] || (byCh[key]={name:key,n:0,solve:[]});
+      a.n++;
+      if(t.solveH!=null) a.solve.push(t.solveH);
+    });
+  }
+  var chRows = Object.keys(byCh).map(function(k){
+    var a=byCh[k];
+    return {name:a.name, n:a.n, perDay:a.n/divisor, solve:mean(a.solve)};
+  }).sort(function(x,y){ return y.perDay-x.perDay; });
+
+  /* Ряд по дням периода */
+  var byDay = {};
+  kept.forEach(function(t){
+    var k = dayKey(t.created);
+    var a = byDay[k] || (byDay[k]={n:0,solve:[],first:[]});
+    a.n++;
+    if(t.solveH!=null) a.solve.push(t.solveH);
+    if(t.firstH!=null) a.first.push(t.firstH);
+  });
+  var daily=[], cur=startOfDay(P.start), guard=0;
+  while(cur<=P.end && guard++<800){
+    var k=dayKey(cur), a=byDay[k];
+    daily.push({d:new Date(cur), n:a?a.n:0, solve:a?mean(a.solve):null, first:a?mean(a.first):null});
+    cur = addDays(cur,1);
+  }
+
+  var owners = {};
+  if(S.cfg.mapping.owner) kept.forEach(function(t){ if(t.owner&&t.owner!=='—') owners[t.owner]=1; });
+  var ownerCount = Object.keys(owners).length;
+
+  return {
+    period:P, divisor:divisor, covDays:covDays, covStart:covStart, covEnd:covEnd,
+    minD:minD, maxD:maxD, anchor:anchor,
+    allCount:all.length, inPeriodCount:inPeriod.length, keptCount:kept.length,
+    droppedNoCat:droppedNoCat, built:built,
+    avg:{
+      perDay: kept.length/divisor,
+      solve:  mean(solveArr),  solveMed: median(solveArr),  solveN: solveArr.length,
+      first:  mean(firstArr),  firstMed: median(firstArr),  firstN: firstArr.length,
+      csat:   mean(csatArr),   csatN: csatArr.length,
+      tags:   mean(tagCounts),
+      reopen: reopenArr.length ? mean(reopenArr)*100 : null, reopenN: reopenArr.length,
+      perOwner: ownerCount ? kept.length/divisor/ownerCount : null, owners: ownerCount
+    },
+    tagRows:tagRows, chRows:chRows, daily:daily, volTotal:volTotal
+  };
+}
+
+/* ============================================================
+   9. ПОДСКАЗКА ПРИ НАВЕДЕНИИ
+   ============================================================ */
+var tipEl = $('#tip');
+function tipHtml(title,pairs){
+  var h = '<b>'+esc(title)+'</b><dl>';
+  pairs.forEach(function(p){
+    if(p[1]==null) return;
+    h += '<dt>'+esc(p[0])+'</dt><dd>'+esc(p[1])+'</dd>';
+  });
+  return h+'</dl>';
+}
+function showTip(html,x,y){
+  tipEl.innerHTML = html;
+  tipEl.classList.add('on');
+  var r = tipEl.getBoundingClientRect();
+  var left = Math.min(Math.max(8,x+14), window.innerWidth-r.width-8);
+  var top  = y-r.height-12;
+  if(top<8) top = y+18;
+  tipEl.style.left = left+'px';
+  tipEl.style.top  = top+'px';
+}
+function hideTip(){ tipEl.classList.remove('on'); }
+function bindTip(el,html){
+  el.addEventListener('mousemove',function(e){ showTip(html,e.clientX,e.clientY); });
+  el.addEventListener('mouseleave',hideTip);
+  el.addEventListener('focus',function(){
+    var r = el.getBoundingClientRect();
+    showTip(html, r.left+r.width/2, r.top+8);
+  });
+  el.addEventListener('blur',hideTip);
+}
+
+/* ============================================================
+   10. ГРАФИКИ
+   ============================================================ */
+function renderBars(el, items, opt){
+  opt = opt || {};
+  el.innerHTML = '';
+  el.classList.toggle('textured', S.cfg.settings.texture==='on');
+  if(!items.length){
+    el.innerHTML = '<p class="c-sub" style="margin:0">Нет данных для этого разреза.</p>';
+    return;
+  }
+  var max = 0;
+  items.forEach(function(i){ if((i.value||0)>max) max = i.value; });
+  if(max<=0) max = 1;
+  items.forEach(function(it){
+    var row = document.createElement('div');
+    row.className = 'bar-row';
+    row.tabIndex = 0;
+    row.setAttribute('role','img');
+    row.setAttribute('aria-label', it.name+': '+opt.fmt(it.value));
+    row.innerHTML =
+      '<span class="bar-name">'+(it.code?'<code>'+esc(it.code)+'</code>':'')+esc(it.name)+'</span>'+
+      '<span class="bar-val">'+esc(opt.fmt(it.value))+'</span>'+
+      '<span class="bar-track"><span class="bar-fill'+(opt.alt?' alt':'')+
+        '" style="width:'+Math.max(1.5,(it.value||0)/max*100).toFixed(2)+'%"></span></span>';
+    bindTip(row, tipHtml(it.name, it.tip||[]));
+    el.appendChild(row);
+  });
+}
+
+function niceMax(v){
+  if(!(v>0)) return 1;
+  var exp = Math.pow(10,Math.floor(Math.log(v)/Math.LN10));
+  var f = v/exp, steps = [1,1.2,1.5,2,2.5,3,4,5,6,8,10], i;
+  for(i=0;i<steps.length;i++) if(f <= steps[i]+1e-9) return steps[i]*exp;
+  return 10*exp;
+}
+function svgEl(tag,attrs){
+  var e = document.createElementNS('http://www.w3.org/2000/svg',tag);
+  Object.keys(attrs||{}).forEach(function(k){
+    if(attrs[k]==null) return;
+    e.setAttribute(k,attrs[k]);
+  });
+  return e;
+}
+function renderLine(el, daily, meanH){
+  el.innerHTML = '';
+  var pts = daily || [];
+  var vals = pts.filter(function(p){ return p.solve!=null; });
+  if(!vals.length){
+    el.innerHTML = '<p class="c-sub" style="margin:0">За период нет обращений с известным временем решения.</p>';
+    return;
+  }
+  var W = Math.max(260, Math.round(el.clientWidth || el.parentNode.clientWidth || 520)), H = 232;
+  var padL = 46, padR = 16, padT = 30, padB = 30;
+  var plotW = W-padL-padR, plotH = H-padT-padB;
+
+  var maxV = 0;
+  vals.forEach(function(p){ if(p.solve>maxV) maxV=p.solve; });
+  if(meanH!=null && meanH>maxV) maxV = meanH;
+  var u = unitFor(maxV);
+  var yMax = niceMax(maxV/u.div * 1.08);
+  var n = pts.length;
+  var step = n>1 ? plotW/(n-1) : 0;
+  var X = function(i){ return padL + (n>1 ? i*step : plotW/2); };
+  var Y = function(v){ return padT + plotH - (v/u.div)/yMax*plotH; };
+
+  var svg = svgEl('svg',{class:'chart-svg', viewBox:'0 0 '+W+' '+H,
+                         width:W, height:H, role:'img',
+                         'aria-label':'Среднее время решения по дням периода'});
+  svg.style.width='100%'; svg.style.height=H+'px';
+
+  /* сетка и подписи оси Y */
+  var i, t;
+  for(i=0;i<=4;i++){
+    t = yMax*i/4;
+    var y = padT+plotH-(i/4)*plotH;
+    svg.appendChild(svgEl('line',{class:'gridline',x1:padL,x2:padL+plotW,y1:y,y2:y}));
+    var lbl = svgEl('text',{class:'tick',x:padL-8,y:y+3.5,'text-anchor':'end'});
+    lbl.textContent = fmtNum(t, yMax<10?1:0);
+    svg.appendChild(lbl);
+  }
+  var unitLbl = svgEl('text',{class:'tick',x:padL-8,y:padT-14,'text-anchor':'end'});
+  unitLbl.textContent = u.suf;
+  svg.appendChild(unitLbl);
+
+  /* область и линия, с разрывами на днях без данных */
+  var segs=[], cur=[];
+  pts.forEach(function(p,ix){
+    if(p.solve==null){ if(cur.length){segs.push(cur);cur=[];} }
+    else cur.push({x:X(ix),y:Y(p.solve)});
+  });
+  if(cur.length) segs.push(cur);
+  segs.forEach(function(sg){
+    if(sg.length>1){
+      var dA = 'M'+sg[0].x+','+(padT+plotH)+'L'+sg.map(function(p){return p.x+','+p.y;}).join('L')+
+               'L'+sg[sg.length-1].x+','+(padT+plotH)+'Z';
+      svg.appendChild(svgEl('path',{class:'seriearea',d:dA}));
+    }
+    var dL = 'M'+sg.map(function(p){return p.x+','+p.y;}).join('L');
+    svg.appendChild(svgEl('path',{class:'serieline',d:dL,
+      'stroke-dasharray':sg.length===1?'0 4':null}));
+    if(sg.length===1) svg.appendChild(svgEl('circle',{class:'focusdot',cx:sg[0].x,cy:sg[0].y,r:3.5}));
+  });
+
+  /* среднее за весь период — опорная линия */
+  if(meanH!=null && meanH/u.div<=yMax){
+    var my = Y(meanH);
+    svg.appendChild(svgEl('line',{class:'meanline',x1:padL,x2:padL+plotW,y1:my,y2:my}));
+    var mtxt = 'среднее '+fmtIn(meanH,u);
+    var mw = mtxt.length*5.7+8;
+    svg.appendChild(svgEl('rect',{x:padL+plotW-mw,y:my-15,width:mw,height:13,
+                                  fill:'var(--surface)',rx:3}));
+    var ml = svgEl('text',{class:'meanlbl',x:padL+plotW-4,y:my-5,'text-anchor':'end'});
+    ml.textContent = mtxt;
+    svg.appendChild(ml);
+  }
+
+  /* подписи оси X */
+  var everyK = Math.max(1, Math.ceil(n/Math.max(2,Math.floor(plotW/62))));
+  pts.forEach(function(p,ix){
+    if(ix%everyK && ix!==n-1) return;
+    if(ix!==n-1 && (n-1-ix)<everyK*0.6) return;
+    var tx = svgEl('text',{class:'tick',x:X(ix),y:padT+plotH+16,'text-anchor':'middle'});
+    tx.textContent = fmtDateShort(p.d);
+    svg.appendChild(tx);
+  });
+  svg.appendChild(svgEl('line',{class:'axisline',x1:padL,x2:padL+plotW,y1:padT+plotH,y2:padT+plotH}));
+
+  /* слой наведения */
+  var cross = svgEl('line',{class:'crosshair',x1:0,x2:0,y1:padT,y2:padT+plotH,opacity:0});
+  var dot   = svgEl('circle',{class:'focusdot',r:4.5,opacity:0});
+  svg.appendChild(cross); svg.appendChild(dot);
+  var hit = svgEl('rect',{x:padL,y:padT,width:plotW,height:plotH,fill:'transparent'});
+  hit.style.cursor='crosshair';
+  hit.addEventListener('mousemove',function(e){
+    var box = svg.getBoundingClientRect();
+    var sx = (e.clientX-box.left)*(W/box.width);
+    var ix = n>1 ? Math.round((sx-padL)/step) : 0;
+    ix = Math.max(0,Math.min(n-1,ix));
+    var p = pts[ix];
+    cross.setAttribute('x1',X(ix)); cross.setAttribute('x2',X(ix)); cross.setAttribute('opacity',1);
+    if(p.solve!=null){
+      dot.setAttribute('cx',X(ix)); dot.setAttribute('cy',Y(p.solve)); dot.setAttribute('opacity',1);
+    } else dot.setAttribute('opacity',0);
+    showTip(tipHtml(fmtDate(p.d),[
+      ['Среднее время решения', p.solve!=null?fmtHours(p.solve):'нет данных'],
+      ['Обращений создано', fmtNum(p.n,0)]
+    ]), e.clientX, e.clientY);
+  });
+  hit.addEventListener('mouseleave',function(){
+    cross.setAttribute('opacity',0); dot.setAttribute('opacity',0); hideTip();
+  });
+  svg.appendChild(hit);
+  el.appendChild(svg);
+}
+function sparkline(values){
+  var vals = (values||[]).map(function(v){ return v==null?null:v; });
+  var ok = vals.filter(function(v){ return v!=null; });
+  if(ok.length<2) return '';
+  var max=Math.max.apply(null,ok), min=Math.min.apply(null,ok);
+  var rng = (max-min)||1, n=vals.length;
+  var pts=[], i;
+  for(i=0;i<n;i++){
+    if(vals[i]==null) continue;
+    pts.push([(i/(n-1))*100, 24-((vals[i]-min)/rng)*22]);
+  }
+  if(pts.length<2) return '';
+  var dl = 'M'+pts.map(function(p){return p[0].toFixed(2)+','+p[1].toFixed(2);}).join('L');
+  var da = dl+'L'+pts[pts.length-1][0].toFixed(2)+',26L'+pts[0][0].toFixed(2)+',26Z';
+  var last = pts[pts.length-1];
+  return '<svg class="spark" viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true">'+
+         '<path class="a" d="'+da+'"/>'+
+         '<path class="l" d="'+dl+'" vector-effect="non-scaling-stroke"/>'+
+         '<circle cx="'+last[0].toFixed(2)+'" cy="'+last[1].toFixed(2)+'" r="2" vector-effect="non-scaling-stroke"/>'+
+         '</svg>';
+}
+
+/* ============================================================
+   11. ТАБЛИЦЫ
+   ============================================================ */
+function simpleTable(el, cols, rows){
+  var h = '<table class="data"><thead><tr>';
+  cols.forEach(function(c){ h += '<th scope="col" style="cursor:default">'+esc(c.t)+'</th>'; });
+  h += '</tr></thead><tbody>';
+  rows.forEach(function(r){
+    h += '<tr>';
+    cols.forEach(function(c){ h += '<td>'+c.f(r)+'</td>'; });
+    h += '</tr>';
+  });
+  el.innerHTML = h+'</tbody></table>';
+}
+
+/* ============================================================
+   12. ОТРИСОВКА ОТЧЁТА
+   ============================================================ */
+function notice(kind,glyph,html,actions){
+  return '<div class="notice '+kind+'"><span class="ico" aria-hidden="true">'+glyph+'</span>'+
+         '<div>'+html+'</div>'+
+         (actions?'<div class="n-act no-print">'+actions+'</div>':'')+'</div>';
+}
+function renderNotices(v){
+  var h = '';
+  if(S.isDemo){
+    h += notice('demo','!',
+      '<b>Это демонстрационные данные.</b> Синтетический набор обращений и теги с префиксом '+
+      '<code>DEMO</code> — они нужны только чтобы показать работу дашборда и <b>не являются данными проекта Зублефар и не являются Каталогом ОПИК.</b> '+
+      'Загрузите выгрузку из CRM и свой каталог, чтобы увидеть реальные цифры.',
+      '<button type="button" class="btn sm primary" data-act="load">Загрузить выгрузку</button>');
+  }
+  if(!S.isDemo && !(S.cfg.catalog||[]).length && S.rows.length){
+    h += notice('bad','!',
+      '<b>Каталог ОПИК не заполнен.</b> Разрезы по тегам пусты, пока в каталоге нет ни одной позиции. '+
+      'Вставьте список тегов или отберите их из загруженной выгрузки.',
+      '<button type="button" class="btn sm primary" data-act="catalog">Заполнить каталог</button>');
+  }
+  if(S.rows.length && !S.cfg.mapping.created){
+    h += notice('bad','!',
+      '<b>Не выбран столбец с датой создания.</b> Без него нельзя определить период — укажите столбец вручную.',
+      '<button type="button" class="btn sm primary" data-act="map">Указать столбцы</button>');
+  }
+  if(S.rows.length && !(S.cfg.tagColumns||[]).length){
+    h += notice('bad','!',
+      '<b>Не выбраны столбцы с тегами.</b> Укажите, в каких колонках выгрузки лежат теги ОПИК.',
+      '<button type="button" class="btn sm primary" data-act="map">Указать столбцы</button>');
+  }
+  if(v && !v.empty){
+    if(v.keptCount===0){
+      h += notice('bad','!',
+        '<b>За период «'+esc(v.period.label)+'» нет подходящих обращений.</b> '+
+        'В выгрузке есть данные за '+esc(fmtDate(v.minD))+' – '+esc(fmtDate(v.maxD))+
+        '. Смените период в верхней панели или точку отсчёта в настройках.');
+    } else if(v.covDays < v.period.days){
+      h += notice('info','i',
+        '<b>Выгрузка покрывает период не полностью:</b> '+v.covDays+' '+plural(v.covDays,['день','дня','дней'])+
+        ' из '+v.period.days+'. Сейчас средние в день делятся на '+
+        (S.cfg.settings.divisor==='covered'
+          ? '<b>дни с данными</b>'
+          : '<b>календарные дни периода</b>, поэтому они занижены')+'.',
+        '<button type="button" class="btn sm" data-act="settings">Изменить делитель</button>');
+    }
+    var outN = Object.keys(v.built.outsideSet||{}).length;
+    if(outN){
+      h += notice('info','i',
+        'Вне Каталога ОПИК осталось <b>'+outN+'</b> '+plural(outN,['значение тега','значения тегов','значений тегов'])+
+        '. В расчёты они не попадают.',
+        '<button type="button" class="btn sm" data-act="catpick">Посмотреть и добавить</button>');
+    }
+  }
+  $('#notices').innerHTML = h;
+}
+
+function renderLedger(v){
+  var outN = Object.keys(v.built.outsideSet||{}).length;
+  var cells = [
+    ['Файл', esc(S.fileName||'—')],
+    ['Строк в выгрузке', fmtNum(S.rows.length,0)],
+    ['Данные за', fmtDate(v.minD)+' – '+fmtDate(v.maxD)],
+    ['Обращений в периоде', fmtNum(v.inPeriodCount,0)],
+    ['В расчёте', fmtNum(v.keptCount,0)+(v.droppedNoCat?'<span style="font-size:11px;color:var(--muted)"> · '+fmtNum(v.droppedNoCat,0)+' без тегов ОПИК исключено</span>':'')],
+    ['Теги вне каталога (вся выгрузка)', (outN?'<span class="warnv">'+fmtNum(outN,0)+'</span>':'0')]
+  ];
+  $('#ledger').innerHTML = cells.map(function(c){
+    return '<div><dt>'+c[0]+'</dt><dd>'+c[1]+'</dd></div>';
+  }).join('');
+}
+
+function kpiCard(o){
+  return '<div class="kpi'+(o.empty?' empty':'')+'">'+
+    '<div class="k-lbl">'+esc(o.label)+'</div>'+
+    '<div class="k-val">'+o.value+(o.unit?'<u>'+esc(o.unit)+'</u>':'')+'</div>'+
+    (o.spark||'')+
+    '<div class="k-foot">'+(o.foot||'')+'</div>'+
+  '</div>';
+}
+function renderKpis(v){
+  var a = v.avg, m = S.cfg.mapping, out = [];
+
+  out.push(kpiCard({
+    label:'Обращений в день',
+    value: fmtNum(a.perDay,1),
+    foot: 'всего '+fmtNum(v.keptCount,0)+' за '+v.divisor+' '+plural(v.divisor,['день','дня','дней']),
+    spark: sparkline(v.daily.map(function(d){return d.n;}))
+  }));
+
+  out.push(a.firstN ? kpiCard({
+    label:'Время до первого ответа',
+    value: fmtHours(a.first),
+    foot: 'медиана '+fmtHours(a.firstMed)+' · по '+fmtNum(a.firstN,0)+' '+plural(a.firstN,['обращению','обращениям','обращениям']),
+    spark: sparkline(v.daily.map(function(d){return d.first;}))
+  }) : kpiCard({
+    label:'Время до первого ответа', value:'—', empty:true,
+    foot: m.first||m.firstDur ? 'в периоде нет заполненных значений' : 'столбец не сопоставлен'
+  }));
+
+  out.push(a.solveN ? kpiCard({
+    label:'Время решения',
+    value: fmtHours(a.solve),
+    foot: 'медиана '+fmtHours(a.solveMed)+' · по '+fmtNum(a.solveN,0)+' '+plural(a.solveN,['обращению','обращениям','обращениям']),
+    spark: sparkline(v.daily.map(function(d){return d.solve;}))
+  }) : kpiCard({
+    label:'Время решения', value:'—', empty:true,
+    foot: m.closed||m.solveDur ? 'в периоде нет заполненных значений' : 'столбец не сопоставлен'
+  }));
+
+  out.push(kpiCard({
+    label:'Тегов ОПИК на обращение',
+    value: fmtNum(a.tags,2),
+    foot: 'в разрезах учтено '+fmtNum(v.volTotal,1)+' '+plural(v.volTotal,['доля','доли','долей'])+' обращений'
+  }));
+
+  if(m.csat){
+    out.push(a.csatN ? kpiCard({
+      label:'Оценка клиента',
+      value: fmtNum(a.csat,2),
+      foot: 'по '+fmtNum(a.csatN,0)+' '+plural(a.csatN,['оценке','оценкам','оценкам'])
+    }) : kpiCard({label:'Оценка клиента',value:'—',empty:true,foot:'в периоде нет оценок'}));
+  }
+  if(m.owner){
+    out.push(a.perOwner!=null ? kpiCard({
+      label:'Обращений в день на сотрудника',
+      value: fmtNum(a.perOwner,2),
+      foot: a.owners+' '+plural(a.owners,['ответственный','ответственных','ответственных'])+' в периоде'
+    }) : kpiCard({label:'Обращений в день на сотрудника',value:'—',empty:true,foot:'нет ответственных в периоде'}));
+  }
+  if(m.reopen){
+    out.push(a.reopen!=null ? kpiCard({
+      label:'Доля повторных открытий',
+      value: fmtNum(a.reopen,1), unit:'%',
+      foot: 'по '+fmtNum(a.reopenN,0)+' '+plural(a.reopenN,['обращению','обращениям','обращениям'])
+    }) : kpiCard({label:'Доля повторных открытий',value:'—',empty:true,foot:'нет заполненных значений'}));
+  }
+  $('#kpis').innerHTML = out.join('');
+}
+
+function renderCharts(v){
+  var topN = +S.cfg.settings.topN || 8;
+
+  /* объём по тегам */
+  var vol = v.tagRows.slice().sort(function(a,b){ return b.perDay-a.perDay; });
+  var volTop = vol.slice(0,topN), volRest = vol.slice(topN);
+  if(volRest.length){
+    var restSum = volRest.reduce(function(s,r){ return s+r.perDay; },0);
+    volTop = volTop.concat([{code:'',name:'Прочие теги ('+volRest.length+')',perDay:restSum,share:null,n:null}]);
+  }
+  renderBars($('#barsVolume'), volTop.map(function(r){
+    return {code:r.code, name:r.name, value:r.perDay, tip:[
+      ['Обращений в день', fmtNum(r.perDay,2)],
+      ['Доля объёма', r.share!=null?fmtNum(r.share,1)+' %':null],
+      ['Обращений за период', r.n!=null?fmtNum(r.n,0):null],
+      ['Ср. время решения', r.solve!=null?fmtHours(r.solve):null]
+    ]};
+  }), {fmt:function(x){ return fmtNum(x,2); }});
+  $('#subVolume').textContent = 'По тегам Каталога ОПИК · ' + (vol.length
+    ? vol.length+' '+plural(vol.length,['тег','тега','тегов'])+' в периоде'
+    : 'нет тегов каталога в периоде');
+  simpleTable($('#tblVolume'),
+    [{t:'Тег',f:function(r){return (r.code?'<code>'+esc(r.code)+'</code>':'')+esc(r.name);}},
+     {t:'В день',f:function(r){return fmtNum(r.perDay,2);}},
+     {t:'Доля',f:function(r){return r.share!=null?fmtNum(r.share,1)+' %':'—';}}],
+    vol);
+
+  /* время решения по тегам */
+  var slv = v.tagRows.filter(function(r){ return r.solve!=null; })
+                     .sort(function(a,b){ return b.solve-a.solve; }).slice(0,topN);
+  var uSolve = unitFor(slv.length?slv[0].solve:null);
+  renderBars($('#barsSolve'), slv.map(function(r){
+    return {code:r.code, name:r.name, value:r.solve, tip:[
+      ['Среднее время решения', fmtHours(r.solve)],
+      ['Медиана', r.solveMed!=null?fmtHours(r.solveMed):null],
+      ['Обращений за период', fmtNum(r.n,0)]
+    ]};
+  }), {alt:true, fmt:function(x){ return fmtIn(x,uSolve); }});
+  $('#subSolve').textContent = 'По тегам Каталога ОПИК · единица шкалы — ' + uSolve.suf;
+  simpleTable($('#tblSolve'),
+    [{t:'Тег',f:function(r){return (r.code?'<code>'+esc(r.code)+'</code>':'')+esc(r.name);}},
+     {t:'Среднее',f:function(r){return fmtHours(r.solve);}},
+     {t:'Медиана',f:function(r){return r.solveMed!=null?fmtHours(r.solveMed):'—';}}],
+    v.tagRows.filter(function(r){return r.solve!=null;}).sort(function(a,b){return b.solve-a.solve;}));
+
+  /* динамика по дням */
+  renderLine($('#lineDaily'), v.daily, v.avg.solve);
+  simpleTable($('#tblDaily'),
+    [{t:'День',f:function(r){return fmtDate(r.d);}},
+     {t:'Обращений',f:function(r){return fmtNum(r.n,0);}},
+     {t:'Ср. время решения',f:function(r){return r.solve!=null?fmtHours(r.solve):'—';}}],
+    v.daily);
+
+  /* каналы */
+  var chCard = $('#cardChannel');
+  if(!S.cfg.mapping.channel || !v.chRows.length){
+    chCard.hidden = true;
+  } else {
+    chCard.hidden = false;
+    renderBars($('#barsChannel'), v.chRows.slice(0,topN).map(function(r){
+      return {code:'', name:r.name, value:r.perDay, tip:[
+        ['Обращений в день', fmtNum(r.perDay,2)],
+        ['Обращений за период', fmtNum(r.n,0)],
+        ['Ср. время решения', r.solve!=null?fmtHours(r.solve):null]
+      ]};
+    }), {fmt:function(x){ return fmtNum(x,2); }});
+    simpleTable($('#tblChannel'),
+      [{t:'Канал',f:function(r){return esc(r.name);}},
+       {t:'В день',f:function(r){return fmtNum(r.perDay,2);}},
+       {t:'Ср. время решения',f:function(r){return r.solve!=null?fmtHours(r.solve):'—';}}],
+      v.chRows);
+  }
+}
+
+var TAG_COLS = [
+  {k:'name',   t:'Тег ОПИК',            num:false},
+  {k:'perDay', t:'Обращений в день',    num:true, f:function(r){return fmtNum(r.perDay,2);}},
+  {k:'share',  t:'Доля объёма',         num:true, f:function(r){return r.share!=null?fmtNum(r.share,1)+' %':'—';}},
+  {k:'first',  t:'Ср. первый ответ',    num:true, f:function(r){return r.first!=null?fmtHours(r.first):'—';}},
+  {k:'solve',  t:'Ср. время решения',   num:true, f:function(r){return r.solve!=null?fmtHours(r.solve):'—';}},
+  {k:'csat',   t:'Ср. оценка',          num:true, f:function(r){return r.csat!=null?fmtNum(r.csat,2):'—';}},
+  {k:'n',      t:'Обращений за период', num:true, f:function(r){return fmtNum(r.n,0);}}
+];
+function renderTagTable(v){
+  var cols = TAG_COLS.filter(function(c){
+    if(c.k==='csat') return !!S.cfg.mapping.csat;
+    if(c.k==='first') return v.tagRows.some(function(r){return r.first!=null;});
+    return true;
+  });
+  var s = S.tagSort;   /* dir: 1 — по возрастанию, -1 — по убыванию */
+  var rows = v.tagRows.slice().sort(function(a,b){
+    var x=a[s.key], y=b[s.key];
+    if(s.key==='name') return String(x).localeCompare(String(y),'ru')*s.dir;
+    if(x==null&&y==null) return 0;
+    if(x==null) return 1;
+    if(y==null) return -1;
+    return (x-y)*s.dir;
+  });
+  var h = '<thead><tr>';
+  cols.forEach(function(c){
+    var on = s.key===c.k;
+    h += '<th scope="col" data-k="'+c.k+'" tabindex="0"'+(on?' aria-sort="'+(s.dir<0?'descending':'ascending')+'"':'')+'>'+
+         esc(c.t)+(on?'<span class="ar">'+(s.dir<0?'▼':'▲')+'</span>':'')+'</th>';
+  });
+  h += '</tr></thead><tbody>';
+  if(!rows.length){
+    h += '<tr><td colspan="'+cols.length+'" style="text-align:left;color:var(--muted)">'+
+         'Ни один тег Каталога ОПИК не встретился в периоде.</td></tr>';
+  }
+  rows.forEach(function(r){
+    h += '<tr>';
+    cols.forEach(function(c){
+      h += '<td>'+(c.k==='name'
+            ? (r.code?'<code>'+esc(r.code)+'</code>':'')+esc(r.name)
+            : c.f(r))+'</td>';
+    });
+    h += '</tr>';
+  });
+  h += '</tbody>';
+  if(rows.length){
+    var a = v.avg;
+    h += '<tfoot><tr>';
+    cols.forEach(function(c){
+      var val = '—';
+      if(c.k==='name')   val = 'Все обращения в периоде';
+      if(c.k==='perDay') val = fmtNum(a.perDay,2);
+      if(c.k==='share')  val = fmtNum(100,1)+' %';
+      if(c.k==='first')  val = a.first!=null?fmtHours(a.first):'—';
+      if(c.k==='solve')  val = a.solve!=null?fmtHours(a.solve):'—';
+      if(c.k==='csat')   val = a.csat!=null?fmtNum(a.csat,2):'—';
+      if(c.k==='n')      val = fmtNum(v.keptCount,0);
+      h += '<td>'+val+'</td>';
+    });
+    h += '</tr></tfoot>';
+  }
+  var t = $('#tagTable');
+  t.innerHTML = h;
+  $$('th[data-k]',t).forEach(function(th){
+    var go = function(){
+      var k = th.getAttribute('data-k');
+      if(S.tagSort.key===k) S.tagSort.dir *= -1;
+      else S.tagSort = {key:k, dir:(k==='name'?1:-1)};
+      renderTagTable(S.view);
+    };
+    th.addEventListener('click',go);
+    th.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } });
+  });
+}
+
+function renderNotes(v){
+  var st = S.cfg.settings, m = S.cfg.mapping, li = [];
+  li.push('<b>Период.</b> Отчёт показывает только <b>предыдущий завершённый период</b> — '+
+          esc(v.period.label)+' ('+esc(v.period.range)+'). Точка отсчёта: '+
+          (st.anchor==='today'?'сегодняшняя дата':'последняя дата в выгрузке ('+fmtDate(v.maxD)+')')+
+          '. Текущий незавершённый период и сравнение с ним не выводятся.');
+  li.push('<b>Только средние.</b> Все показатели — средние арифметические за период. '+
+          'Там, где распределение скошено, рядом приводится медиана. Целевые значения SLA и проценты их соблюдения в отчёте не используются.');
+  li.push('<b>Обращений в день.</b> Число обращений периода, делённое на '+
+          (st.divisor==='covered'
+            ? 'число дней, покрытых выгрузкой'
+            : 'число календарных дней периода')+' — сейчас это '+v.divisor+' '+
+          plural(v.divisor,['день','дня','дней'])+'.');
+  li.push('<b>Время решения.</b> '+(m.solveDur
+            ? 'Берётся из столбца «'+esc(m.solveDur)+'».'
+            : 'Разница между датой закрытия и датой создания.')+
+          ' Значения вне диапазона 0–400 дней отбрасываются как ошибочные.');
+  li.push('<b>Время первого ответа.</b> '+(m.firstDur
+            ? 'Берётся из столбца «'+esc(m.firstDur)+'».'
+            : (m.first ? 'Разница между датой первого ответа и датой создания.'
+                       : 'Не рассчитывается: столбец не сопоставлен.')));
+  li.push('<b>Каталог ОПИК.</b> В разрезы попадают только теги из каталога ('+
+          (S.cfg.catalog||[]).length+' '+plural((S.cfg.catalog||[]).length,['позиция','позиции','позиций'])+
+          '). Значения вне каталога учитываются отдельным счётчиком и в средние по тегам не входят. '+
+          'Обращения без единого тега каталога '+
+          (st.strict==='exclude'?'<b>исключены из всех расчётов</b>':'учтены в общих средних, но не в разрезах по тегам')+'.');
+  li.push('<b>Несколько тегов у обращения.</b> '+(st.multi==='split'
+            ? 'Объём делится поровну между тегами, поэтому сумма долей равна 100 %.'
+            : 'Обращение целиком учитывается в каждом своём теге, поэтому сумма по тегам больше общего числа обращений.')+
+          ' Средние времена и оценки в любом случае считаются по обращениям тега без дробления.');
+  li.push('<b>Данные никуда не уходят.</b> Файл выгрузки читается в браузере; дашборд не обращается к сети и работает с локального диска.');
+  $('#notesList').innerHTML = li.map(function(x){ return '<li>'+x+'</li>'; }).join('');
+}
+
+function render(){
+  syncControls();
+  if(!S.rows.length){
+    $('#empty').hidden = false;
+    $('#report').hidden = true;
+    renderNotices(null);
+    return;
+  }
+  var v = computeView();
+  S.view = v;
+  if(v.empty){
+    $('#empty').hidden = false;
+    $('#report').hidden = true;
+    renderNotices(v);
+    $('#notices').insertAdjacentHTML('beforeend', notice('bad','!',
+      '<b>Не удалось разобрать ни одной даты создания.</b> Проверьте, какой столбец выбран как дата создания, и формат дат в настройках.',
+      '<button type="button" class="btn sm primary" data-act="map">Указать столбцы</button>'));
+    return;
+  }
+  $('#empty').hidden = true;
+  $('#report').hidden = false;
+  renderNotices(v);
+  $('#pMain').textContent  = v.period.label;
+  $('#pRange').textContent = v.period.range;
+  $('#pNote').textContent  = 'Средние за предыдущий период · '+
+    fmtNum(v.keptCount,0)+' '+plural(v.keptCount,['обращение','обращения','обращений'])+' в расчёте';
+  renderLedger(v);
+  renderKpis(v);
+  renderCharts(v);
+  renderTagTable(v);
+  renderNotes(v);
+}
+
+/* ============================================================
+   13. ДИАЛОГИ И ЭЛЕМЕНТЫ УПРАВЛЕНИЯ
+   ============================================================ */
+function openDlg(id){
+  var d = $('#'+id);
+  if(!d) return;
+  if(d.showModal) d.showModal(); else d.setAttribute('open','');
+}
+function closeDlg(id){
+  var d = $('#'+id);
+  if(!d) return;
+  if(d.close) d.close(); else d.removeAttribute('open');
+}
+function closeAllDlg(){ $$('dialog').forEach(function(d){ if(d.open){ if(d.close) d.close(); else d.removeAttribute('open'); } }); }
+
+function applyTheme(){
+  var t = S.cfg.settings.theme;
+  if(t==='system') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme',t);
+  $('#btnTheme').textContent = t==='dark' ? '☾' : (t==='light' ? '☀' : '◐');
+  $('#btnTheme').title = 'Тема: '+(t==='dark'?'тёмная':t==='light'?'светлая':'как в системе');
+}
+function syncControls(){
+  var st = S.cfg.settings;
+  $('#selPeriod').value  = st.gran;
+  $('#setAnchor').value  = st.anchor;
+  $('#setDivisor').value = st.divisor;
+  $('#setStrict').value  = st.strict;
+  $('#setMulti').value   = st.multi;
+  $('#setDurUnit').value = st.durUnit;
+  $('#setDateOrder').value = st.dateOrder;
+  $('#setTopN').value    = String(st.topN);
+  $('#setTexture').value = st.texture;
+}
+
+/* --- диалог колонок --- */
+function sampleFor(col){
+  if(!col) return '';
+  for(var i=0;i<S.rows.length && i<80;i++){
+    var v = S.rows[i][col];
+    if(v!==''&&v!=null) return String(v).slice(0,40);
+  }
+  return '';
+}
+function buildMapDialog(){
+  var opts = function(sel){
+    return '<option value="">— не используется —</option>'+
+      S.headers.map(function(h){
+        return '<option value="'+esc(h)+'"'+(sel===h?' selected':'')+'>'+esc(h)+'</option>';
+      }).join('');
+  };
+  $('#mapRows').innerHTML = FIELDS.map(function(f){
+    return '<div class="maprow">'+
+      '<div class="m-lbl">'+esc(f.label)+(f.req?' <span class="m-req" title="обязательное поле">*</span>':'')+
+        '<em>'+esc(f.hint)+'</em></div>'+
+      '<select class="sel" data-f="'+f.k+'">'+opts(S.cfg.mapping[f.k])+'</select>'+
+      '<span class="m-sample" data-s="'+f.k+'">'+esc(sampleFor(S.cfg.mapping[f.k]))+'</span>'+
+    '</div>';
+  }).join('');
+  $$('#mapRows select').forEach(function(sel){
+    sel.addEventListener('change',function(){
+      var k = sel.getAttribute('data-f');
+      var s = $('#mapRows [data-s="'+k+'"]');
+      if(s) s.textContent = sampleFor(sel.value);
+    });
+  });
+  $('#tagColChips').innerHTML = S.headers.map(function(h){
+    var on = (S.cfg.tagColumns||[]).indexOf(h)>=0;
+    return '<label class="chip'+(on?' on':'')+'"><input type="checkbox" value="'+esc(h)+'"'+
+           (on?' checked':'')+'>'+esc(h)+'</label>';
+  }).join('');
+  $$('#tagColChips input').forEach(function(cb){
+    cb.addEventListener('change',function(){ cb.parentNode.classList.toggle('on',cb.checked); });
+  });
+}
+function applyMapDialog(){
+  var m = {};
+  $$('#mapRows select').forEach(function(sel){
+    if(sel.value) m[sel.getAttribute('data-f')] = sel.value;
+  });
+  S.cfg.mapping = m;
+  S.cfg.tagColumns = $$('#tagColChips input').filter(function(cb){ return cb.checked; })
+                                             .map(function(cb){ return cb.value; });
+  saveStored();
+  closeDlg('dlgMap');
+  render();
+}
+
+/* --- диалог каталога --- */
+function buildCatalogDialog(tab){
+  $('#catText').value = catalogToText(S.cfg.catalog);
+  updateCatCount();
+  buildCandidates();
+  switchCatTab(tab||'catList');
+}
+function updateCatCount(){
+  var n = parseCatalogText($('#catText').value).length;
+  $('#catCount').textContent = n
+    ? 'В списке '+n+' '+plural(n,['позиция','позиции','позиций'])+'.'
+    : 'Список пуст — разрезы по тегам будут пустыми.';
+}
+function switchCatTab(id){
+  $$('#dlgCatalog .tabs button').forEach(function(b){
+    b.setAttribute('aria-selected', String(b.getAttribute('data-tab')===id));
+  });
+  $('#catList').hidden = id!=='catList';
+  $('#catPick').hidden = id!=='catPick';
+}
+function buildCandidates(){
+  var built = (S.view && S.view.built) || buildTickets();
+  var all = {};
+  Object.keys(built.insideSet||{}).forEach(function(k){ all[k]=(all[k]||0)+built.insideSet[k]; });
+  Object.keys(built.outsideSet||{}).forEach(function(k){ all[k]=(all[k]||0)+built.outsideSet[k]; });
+  var idx = catalogIndex();
+  var list = Object.keys(all).map(function(k){
+    return {name:k, n:all[k], on: S.catPickSel ? !!S.catPickSel[k] : !!idx[normTag(k)]};
+  }).sort(function(a,b){ return b.n-a.n || a.name.localeCompare(b.name,'ru'); });
+  S.catCandidates = list;
+  paintCandidates();
+}
+function paintCandidates(){
+  var q = normTag($('#catSearch').value||'');
+  var list = (S.catCandidates||[]).filter(function(c){ return !q || normTag(c.name).indexOf(q)>=0; });
+  if(!list.length){
+    $('#catCand').innerHTML = '<p class="hint" style="margin:6px">В выгрузке не найдено значений тегов. '+
+      'Проверьте, какие столбцы отмечены как столбцы с тегами.</p>';
+    return;
+  }
+  $('#catCand').innerHTML = list.map(function(c,i){
+    return '<label><input type="checkbox" data-n="'+esc(c.name)+'"'+(c.on?' checked':'')+'>'+
+           '<span>'+esc(c.name)+'</span><span class="cnt">'+fmtNum(c.n,0)+'</span></label>';
+  }).join('');
+  $$('#catCand input').forEach(function(cb){
+    cb.addEventListener('change',function(){
+      var nm = cb.getAttribute('data-n');
+      (S.catCandidates||[]).forEach(function(c){ if(c.name===nm) c.on = cb.checked; });
+    });
+  });
+}
+function applyCatalogDialog(){
+  if(!$('#catPick').hidden && S.catCandidates){
+    var idx = catalogIndex(), picked = [];
+    S.catCandidates.forEach(function(c){
+      if(!c.on) return;
+      var ex = idx[normTag(c.name)];
+      picked.push(ex ? {code:ex.code, name:ex.name} : {code:'', name:c.name});
+    });
+    /* позиции каталога, которых нет в выгрузке, сохраняем */
+    (S.cfg.catalog||[]).forEach(function(e){
+      if(!picked.some(function(p){ return normTag(p.name)===normTag(e.name); })) {
+        if(!(S.catCandidates||[]).some(function(c){ return normTag(c.name)===normTag(e.name); })) picked.push(e);
+      }
+    });
+    S.cfg.catalog = picked;
+  } else {
+    S.cfg.catalog = parseCatalogText($('#catText').value);
+  }
+  S.catCandidates = null;
+  saveStored();
+  closeDlg('dlgCatalog');
+  render();
+}
+
+/* ============================================================
+   14. ЗАГРУЗКА ФАЙЛОВ
+   ============================================================ */
+function afterLoad(fileName, headers, rows, isDemo){
+  S.fileName = fileName;
+  S.headers  = headers;
+  S.rows     = rows;
+  S.isDemo   = !!isDemo;
+  S.catCandidates = null;
+  /* демо-каталог не должен незаметно остаться при реальной выгрузке */
+  if(!isDemo && (S.cfg.catalog||[]).length &&
+     S.cfg.catalog.every(function(e){ return e.demo; })) S.cfg.catalog = [];
+  var needMap = !S.cfg.mapping.created || S.headers.indexOf(S.cfg.mapping.created)<0;
+  if(needMap){
+    var a = autoMap(headers);
+    S.cfg.mapping = a.mapping;
+    S.cfg.tagColumns = a.tagColumns;
+  } else {
+    /* оставляем только те сопоставления, что есть в новой выгрузке */
+    Object.keys(S.cfg.mapping).forEach(function(k){
+      if(headers.indexOf(S.cfg.mapping[k])<0) delete S.cfg.mapping[k];
+    });
+    S.cfg.tagColumns = (S.cfg.tagColumns||[]).filter(function(c){ return headers.indexOf(c)>=0; });
+    if(!S.cfg.tagColumns.length) S.cfg.tagColumns = autoMap(headers).tagColumns;
+  }
+  saveStored();
+  render();
+}
+function loadFile(file){
+  if(!file) return;
+  var name = file.name || 'выгрузка';
+  var lower = name.toLowerCase();
+  var fr = new FileReader();
+  fr.onerror = function(){ alert('Не удалось прочитать файл.'); };
+  if(/\.xlsx$/.test(lower)){
+    fr.onload = function(){
+      readXlsx(fr.result).then(function(grid){
+        var g = gridToRows(grid);
+        if(!g.rows.length) throw new Error('В листе не найдено строк с данными.');
+        afterLoad(name, g.headers, g.rows, false);
+      }).catch(function(e){
+        alert('Не удалось разобрать XLSX: '+(e && e.message ? e.message : e)+
+              '\n\nСохраните выгрузку в CSV и попробуйте снова.');
+      });
+    };
+    fr.readAsArrayBuffer(file);
+    return;
+  }
+  if(/\.json$/.test(lower)){
+    fr.onload = function(){
+      try{
+        var data = JSON.parse(decodeBytes(fr.result));
+        var arr = Array.isArray(data) ? data : (Array.isArray(data.rows) ? data.rows : null);
+        if(!arr || !arr.length) throw new Error('Ожидался непустой массив объектов.');
+        var hs = [];
+        arr.forEach(function(o){ Object.keys(o).forEach(function(k){ if(hs.indexOf(k)<0) hs.push(k); }); });
+        afterLoad(name, hs, arr.map(function(o){
+          var r={}; hs.forEach(function(k){ r[k]= o[k]==null?'':o[k]; }); return r;
+        }), false);
+      }catch(e){ alert('Не удалось разобрать JSON: '+(e&&e.message?e.message:e)); }
+    };
+    fr.readAsArrayBuffer(file);
+    return;
+  }
+  fr.onload = function(){
+    try{
+      var text = decodeBytes(fr.result);
+      var delim = /\.tsv$/.test(lower) ? '\t' : detectDelimiter(text);
+      var grid = parseCSV(text,delim);
+      if(!grid.length) throw new Error('Файл пуст.');
+      var g = gridToRows(grid);
+      if(!g.rows.length) throw new Error('Не найдено строк с данными.');
+      afterLoad(name, g.headers, g.rows, false);
+    }catch(e){ alert('Не удалось разобрать файл: '+(e&&e.message?e.message:e)); }
+  };
+  fr.readAsArrayBuffer(file);
+}
+
+/* ============================================================
+   15. ДЕМО-ДАННЫЕ (синтетика, не данные проекта)
+   ============================================================ */
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a+0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a>>>15, 1|a);
+    t = t + Math.imul(t ^ t>>>7, 61|t) ^ t;
+    return ((t ^ t>>>14) >>> 0) / 4294967296;
+  };
+}
+var DEMO_CATALOG = [
+  {code:'DEMO-01', name:'Подключение услуги',      demo:true},
+  {code:'DEMO-02', name:'Ошибка в счёте',          demo:true},
+  {code:'DEMO-03', name:'Возврат средств',         demo:true},
+  {code:'DEMO-04', name:'Настройка доступа',       demo:true},
+  {code:'DEMO-05', name:'Качество связи',          demo:true},
+  {code:'DEMO-06', name:'Смена тарифа',            demo:true},
+  {code:'DEMO-07', name:'Документы и справки',     demo:true},
+  {code:'DEMO-08', name:'Жалоба на обслуживание',  demo:true}
+];
+function demoData(){
+  var rnd = mulberry32(20260901);
+  var chans  = ['Телефон','Чат','Почта','Личный кабинет','Мессенджер'];
+  var chanW  = [0.34,0.26,0.16,0.15,0.09];
+  var people = [];
+  for(var p=1;p<=11;p++) people.push('Специалист '+p);
+  var tagW   = [0.19,0.16,0.10,0.14,0.13,0.11,0.09,0.08];
+  var tagBase= [4.5, 21, 52, 3.2, 9, 5.5, 30, 41];   /* базовое время решения, ч */
+  var pick = function(arr,w){
+    var r = rnd(), acc = 0, i;
+    for(i=0;i<arr.length;i++){ acc += w[i]; if(r<=acc) return i; }
+    return arr.length-1;
+  };
+  var rows = [], id = 41200;
+  var today = startOfDay(new Date());
+  var start = addDays(today,-120);
+  var d = new Date(start);
+  while(d <= today){
+    var dow = d.getDay();
+    var base = (dow===0||dow===6) ? 7 : 19;
+    var count = Math.max(1, Math.round(base * (0.75+rnd()*0.55)));
+    for(var i=0;i<count;i++){
+      var ti = pick(DEMO_CATALOG,tagW);
+      var tag = DEMO_CATALOG[ti];
+      var created = new Date(d.getFullYear(),d.getMonth(),d.getDate(),
+                             8+Math.floor(rnd()*11), Math.floor(rnd()*60));
+      var firstH = 0.15 + rnd()*rnd()*6;
+      var solveH = tagBase[ti] * (0.45 + rnd()*1.5);
+      if(rnd()<0.06) solveH *= 2.6;                       /* редкие длинные кейсы */
+      var closed = new Date(created.getTime()+solveH*3600000);
+      var first  = new Date(created.getTime()+firstH*3600000);
+      var ci = pick(chans,chanW);
+      var extraTag = rnd()<0.22 ? DEMO_CATALOG[pick(DEMO_CATALOG,tagW)].name : null;
+      var tags = extraTag && extraTag!==tag.name ? tag.name+'; '+extraTag : tag.name;
+      if(rnd()<0.05) tags = tags+'; Без классификации';   /* значение вне каталога */
+      var fmtDT = function(x){
+        return d2(x.getDate())+'.'+d2(x.getMonth()+1)+'.'+x.getFullYear()+' '+d2(x.getHours())+':'+d2(x.getMinutes());
+      };
+      rows.push({
+        'Номер обращения': 'ZF-'+(++id),
+        'Дата создания': fmtDT(created),
+        'Дата первого ответа': fmtDT(first),
+        'Дата закрытия': closed<=today ? fmtDT(closed) : '',
+        'Теги': tags,
+        'Канал': chans[ci],
+        'Ответственный': people[Math.floor(rnd()*people.length)],
+        'Статус': closed<=today ? 'Закрыто' : 'В работе',
+        'Оценка': rnd()<0.42 ? String(Math.min(5,Math.max(1,Math.round(3.6+rnd()*1.8)))) : '',
+        'Повторное открытие': rnd()<0.08 ? 'да' : 'нет'
+      });
+    }
+    d = addDays(d,1);
+  }
+  return rows;
+}
+function loadDemo(){
+  var rows = demoData();
+  S.cfg.catalog = DEMO_CATALOG.slice();
+  S.cfg.mapping = {};
+  afterLoad('демо-выгрузка.csv', Object.keys(rows[0]), rows, true);
+}
+
+/* ============================================================
+   16. СОХРАНЕНИЕ
+   ============================================================ */
+function jsonSafe(o){
+  return JSON.stringify(o)
+    .replace(/</g,'\\u003c').replace(/>/g,'\\u003e')
+    .replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');
+}
+function download(name,text,mime){
+  try{
+    var blob = new Blob([text],{type:mime||'text/plain;charset=utf-8'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name; a.style.display='none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); a.parentNode && a.parentNode.removeChild(a); },500);
+  }catch(e){
+    alert('Браузер заблокировал сохранение файла. Сохраните страницу через меню браузера (Ctrl+S).');
+  }
+}
+var DYN = ['#notices','#ledger','#kpis','#barsVolume','#barsSolve','#barsChannel','#lineDaily',
+           '#tagTable','#tblVolume','#tblSolve','#tblDaily','#tblChannel',
+           '#mapRows','#tagColChips','#catCand','#notesList'];
+function serializeSelf(withData){
+  closeAllDlg();
+  DYN.forEach(function(sel){ var e=$(sel); if(e) e.innerHTML=''; });
+  var el = $('#catText'); if(el) el.value = '';
+  $('#report').hidden = true;
+  $('#empty').hidden  = false;
+  $('#zfConfig').textContent = jsonSafe(S.cfg);
+  $('#zfData').textContent = (withData && S.rows.length)
+    ? jsonSafe({fileName:S.fileName, headers:S.headers, rows:S.rows, isDemo:S.isDemo})
+    : 'null';
+  var html = '<!doctype html>\n'+document.documentElement.outerHTML+'\n';
+  $('#zfData').textContent = 'null';
+  render();
+  return html;
+}
+function periodSlug(){
+  var v = S.view;
+  if(!v || v.empty) return 'без-данных';
+  return fmtDate(v.period.start).replace(/\./g,'-')+'_'+fmtDate(v.period.end).replace(/\./g,'-');
+}
+function exportCsv(){
+  var v = S.view;
+  if(!v || v.empty){ alert('Нет рассчитанных показателей для выгрузки.'); return; }
+  var sep = ';';
+  var lines = [];
+  lines.push('Проект;Зублефар');
+  lines.push('Период;'+v.period.label+' ('+v.period.range+')');
+  lines.push('Дней в расчёте;'+v.divisor);
+  lines.push('Обращений в расчёте;'+v.keptCount);
+  lines.push('');
+  lines.push(['Код ОПИК','Тег ОПИК','Обращений в день','Доля объёма, %',
+              'Ср. время первого ответа, ч','Ср. время решения, ч','Ср. оценка','Обращений за период'].join(sep));
+  var rows = v.tagRows.slice().sort(function(a,b){ return b.perDay-a.perDay; });
+  var num = function(x,d){ return x==null||!isFinite(x) ? '' : x.toFixed(d).replace('.',','); };
+  var q = function(s){ s=String(s==null?'':s); return /[";\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; };
+  rows.forEach(function(r){
+    lines.push([q(r.code),q(r.name),num(r.perDay,2),num(r.share,1),
+                num(r.first,2),num(r.solve,2),num(r.csat,2),r.n].join(sep));
+  });
+  lines.push('');
+  lines.push([ '','ИТОГО (все обращения периода)', num(v.avg.perDay,2), num(100,1),
+               num(v.avg.first,2), num(v.avg.solve,2), num(v.avg.csat,2), v.keptCount ].join(sep));
+  download('zublefar-pokazateli_'+periodSlug()+'.csv','\uFEFF'+lines.join('\r\n'),'text/csv;charset=utf-8');
+}
+
+/* ============================================================
+   17. СОБЫТИЯ
+   ============================================================ */
+function setSetting(k,val){
+  S.cfg.settings[k] = val;
+  saveStored();
+  render();
+}
+function wire(){
+  $('#btnLoad').addEventListener('click',function(){ $('#fileInput').click(); });
+  $('#btnLoad2').addEventListener('click',function(){ $('#fileInput').click(); });
+  $('#btnDemo2').addEventListener('click',loadDemo);
+  $('#fileInput').addEventListener('change',function(e){
+    if(e.target.files && e.target.files[0]) loadFile(e.target.files[0]);
+    e.target.value='';
+  });
+
+  $('#selPeriod').addEventListener('change',function(e){ setSetting('gran',e.target.value); });
+  $('#btnCatalog').addEventListener('click',function(){ buildCatalogDialog('catList'); openDlg('dlgCatalog'); });
+  $('#btnMap').addEventListener('click',function(){
+    if(!S.headers.length){ alert('Сначала загрузите выгрузку — сопоставлять пока нечего.'); return; }
+    buildMapDialog(); openDlg('dlgMap');
+  });
+  $('#btnSettings').addEventListener('click',function(){ syncControls(); openDlg('dlgSettings'); });
+  $('#btnExport').addEventListener('click',function(){ openDlg('dlgExport'); });
+  $('#btnTheme').addEventListener('click',function(){
+    var order = ['system','light','dark'];
+    var i = order.indexOf(S.cfg.settings.theme);
+    S.cfg.settings.theme = order[(i+1)%order.length];
+    applyTheme(); saveStored();
+    if(S.view && !S.view.empty) renderLine($('#lineDaily'), S.view.daily, S.view.avg.solve);
+  });
+
+  document.addEventListener('click',function(e){
+    var c = e.target.closest ? e.target.closest('[data-close]') : null;
+    if(c){ closeDlg(c.getAttribute('data-close')); return; }
+    var a = e.target.closest ? e.target.closest('[data-act]') : null;
+    if(!a) return;
+    var act = a.getAttribute('data-act');
+    if(act==='load')     $('#fileInput').click();
+    if(act==='catalog')  { buildCatalogDialog('catList'); openDlg('dlgCatalog'); }
+    if(act==='catpick')  { buildCatalogDialog('catPick'); openDlg('dlgCatalog'); }
+    if(act==='map')      { if(S.headers.length){ buildMapDialog(); openDlg('dlgMap'); } }
+    if(act==='settings') { syncControls(); openDlg('dlgSettings'); }
+  });
+
+  /* настройки */
+  $('#setAnchor')   .addEventListener('change',function(e){ setSetting('anchor',e.target.value); });
+  $('#setDivisor')  .addEventListener('change',function(e){ setSetting('divisor',e.target.value); });
+  $('#setStrict')   .addEventListener('change',function(e){ setSetting('strict',e.target.value); });
+  $('#setMulti')    .addEventListener('change',function(e){ setSetting('multi',e.target.value); });
+  $('#setDurUnit')  .addEventListener('change',function(e){ setSetting('durUnit',e.target.value); });
+  $('#setDateOrder').addEventListener('change',function(e){ setSetting('dateOrder',e.target.value); });
+  $('#setTopN')     .addEventListener('change',function(e){ setSetting('topN',+e.target.value); });
+  $('#setTexture')  .addEventListener('change',function(e){ setSetting('texture',e.target.value); });
+  $('#btnResetAll').addEventListener('click',function(){
+    if(!confirm('Сбросить каталог ОПИК, сопоставление колонок, настройки и загруженные данные?')) return;
+    try{ localStorage.removeItem(LS_KEY); }catch(e){}
+    S.cfg = defaults();
+    S.rows=[]; S.headers=[]; S.fileName=''; S.isDemo=false; S.view=null;
+    applyTheme(); closeAllDlg(); render();
+  });
+
+  /* каталог */
+  $$('#dlgCatalog .tabs button').forEach(function(b){
+    b.addEventListener('click',function(){ switchCatTab(b.getAttribute('data-tab')); });
+  });
+  $('#catText').addEventListener('input',updateCatCount);
+  $('#catSearch').addEventListener('input',paintCandidates);
+  $('#btnPickAll') .addEventListener('click',function(){
+    (S.catCandidates||[]).forEach(function(c){ c.on=true; }); paintCandidates();
+  });
+  $('#btnPickNone').addEventListener('click',function(){
+    (S.catCandidates||[]).forEach(function(c){ c.on=false; }); paintCandidates();
+  });
+  $('#btnCatApply').addEventListener('click',applyCatalogDialog);
+  $('#btnCatExport').addEventListener('click',function(){
+    var cat = !$('#catPick').hidden && S.catCandidates
+      ? S.catCandidates.filter(function(c){return c.on;}).map(function(c){return {code:'',name:c.name};})
+      : parseCatalogText($('#catText').value);
+    download('opik-catalog.json', JSON.stringify(cat,null,2), 'application/json;charset=utf-8');
+  });
+  $('#btnCatImport').addEventListener('click',function(){ $('#catFileInput').click(); });
+  $('#catFileInput').addEventListener('change',function(e){
+    var f = e.target.files && e.target.files[0];
+    e.target.value='';
+    if(!f) return;
+    var fr = new FileReader();
+    fr.onload = function(){
+      var text = decodeBytes(fr.result), list = [];
+      try{
+        var j = JSON.parse(text);
+        var arr = Array.isArray(j) ? j : (Array.isArray(j.catalog) ? j.catalog : null);
+        if(!arr) throw new Error('not array');
+        list = arr.map(function(x){
+          if(typeof x === 'string') return {code:'',name:x};
+          return {code:String(x.code||x.Код||''), name:String(x.name||x.Тег||x.Название||'')};
+        }).filter(function(x){ return x.name; });
+      }catch(err){
+        var grid = parseCSV(text, detectDelimiter(text));
+        list = grid.map(function(r){
+          var cells = r.map(function(c){ return String(c==null?'':c).trim(); }).filter(function(c){ return c!==''; });
+          if(!cells.length) return null;
+          return cells.length>1 ? {code:cells[0], name:cells.slice(1).join(' ')} : {code:'', name:cells[0]};
+        }).filter(Boolean);
+        if(list.length && /^(код|code|тег|tag|название|name)$/i.test(list[0].code||list[0].name)) list.shift();
+      }
+      if(!list.length){ alert('В файле не найдено ни одной позиции каталога.'); return; }
+      $('#catText').value = catalogToText(list);
+      updateCatCount();
+      switchCatTab('catList');
+    };
+    fr.readAsArrayBuffer(f);
+  });
+
+  /* колонки */
+  $('#btnApplyMap').addEventListener('click',applyMapDialog);
+  $('#btnAutoMap').addEventListener('click',function(){
+    var a = autoMap(S.headers);
+    S.cfg.mapping = a.mapping;
+    S.cfg.tagColumns = a.tagColumns;
+    buildMapDialog();
+  });
+
+  /* сохранение */
+  $('#btnSaveClean').addEventListener('click',function(){
+    download('zublefar-dashboard.html', serializeSelf(false), 'text/html;charset=utf-8');
+    closeDlg('dlgExport');
+  });
+  $('#btnSaveData').addEventListener('click',function(){
+    if(!S.rows.length){ alert('Данные ещё не загружены.'); return; }
+    download('zublefar-dashboard_'+periodSlug()+'.html', serializeSelf(true), 'text/html;charset=utf-8');
+    closeDlg('dlgExport');
+  });
+  $('#btnSaveCsv').addEventListener('click',function(){ exportCsv(); closeDlg('dlgExport'); });
+  $('#btnPrint').addEventListener('click',function(){ closeDlg('dlgExport'); setTimeout(function(){ window.print(); },120); });
+
+  /* перетаскивание файла */
+  var dz = $('#dropzone'), depth = 0;
+  document.addEventListener('dragover',function(e){ e.preventDefault(); });
+  document.addEventListener('dragenter',function(e){
+    e.preventDefault(); depth++; if(dz) dz.classList.add('over');
+  });
+  document.addEventListener('dragleave',function(){ if(--depth<=0 && dz) dz.classList.remove('over'); });
+  document.addEventListener('drop',function(e){
+    e.preventDefault(); depth = 0; if(dz) dz.classList.remove('over');
+    if(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+  });
+
+  /* пересчёт ширины линейного графика */
+  var rt;
+  var redrawLine = function(){
+    clearTimeout(rt);
+    rt = setTimeout(function(){
+      if(S.view && !S.view.empty && !$('#report').hidden)
+        renderLine($('#lineDaily'), S.view.daily, S.view.avg.solve);
+    },140);
+  };
+  window.addEventListener('resize',redrawLine);
+  if(window.ResizeObserver){
+    try{ new ResizeObserver(redrawLine).observe($('#cardDaily')); }catch(e){}
+  }
+  window.addEventListener('beforeprint',function(){
+    if(S.view && !S.view.empty) renderLine($('#lineDaily'), S.view.daily, S.view.avg.solve);
+  });
+}
+
+/* ============================================================
+   18. СТАРТ
+   ============================================================ */
+function init(){
+  var emb = null, data = null;
+  try{ emb = JSON.parse($('#zfConfig').textContent); }catch(e){}
+  if(emb) mergeCfg(emb); else mergeCfg(loadStored());
+  applyTheme();
+  wire();
+  try{ data = JSON.parse($('#zfData').textContent); }catch(e){}
+  if(data && data.rows && data.rows.length){
+    S.fileName = data.fileName || '';
+    S.headers  = data.headers && data.headers.length ? data.headers : Object.keys(data.rows[0]);
+    S.rows     = data.rows;
+    S.isDemo   = !!data.isDemo;
+    render();
+  } else if(!(S.cfg.catalog||[]).length){
+    loadDemo();                       /* первый запуск — показываем работу на демо-наборе */
+  } else {
+    render();
+  }
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init);
+else init();
+
+})();
+</script>
+</body>
+</html>
