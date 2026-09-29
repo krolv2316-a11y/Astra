@@ -1,0 +1,2826 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Единая воронка: от обращения до выигрыша</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F3F5F7; --card: #FFFFFF; --ink: #17212B; --muted: #5C6875; --rule: #D5DCE3; --soft: #E9EEF2;
+  --on-tile: #FFFFFF; --focus: #1B5FD1; --on-focus: #FFFFFF; --danger: #B3261E;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12171C; --card: #1A2128; --ink: #E6EBF0; --muted: #9AA6B2; --rule: #2E3943; --soft: #232C35;
+    --on-tile: #10161B; --focus: #7FA8F0; --on-focus: #10161B; --danger: #F2B8B5; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12171C; --card: #1A2128; --ink: #E6EBF0; --muted: #9AA6B2; --rule: #2E3943; --soft: #232C35;
+  --on-tile: #10161B; --focus: #7FA8F0; --on-focus: #10161B; --danger: #F2B8B5; color-scheme: dark;
+}
+:root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); --ed-w: min(480px, 42vw); --ed-h: 58vh; }
+*, *::before, *::after { box-sizing: inherit; }
+[hidden] { display: none !important; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'IBM Plex Sans', 'Segoe UI', Roboto, Arial, sans-serif; font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 40px; }
+header h1 { font-size: clamp(24px, 3.2vw, 32px); font-weight: 600; letter-spacing: -0.01em; margin: 0 0 6px; }
+header p { margin: 0; color: var(--muted); max-width: 70ch; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; margin: 22px 0 26px; }
+.seg { display: inline-flex; flex-wrap: wrap; background: var(--soft); border-radius: 10px; padding: 3px; }
+.seg button { font: inherit; font-size: 15px; font-weight: 500; border: 0; background: transparent; color: var(--muted); padding: 8px 16px; border-radius: 8px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 0 0 1px var(--rule); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; color: var(--muted); margin: 0; padding: 0; list-style: none; }
+.legend li { display: inline-flex; align-items: center; gap: 7px; }
+.legend i { width: 12px; height: 12px; border-radius: 3px; background: var(--c); display: inline-block; }
+.legend .dash { background: transparent; border: 1.5px dashed var(--muted); }
+.layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr); gap: 32px; align-items: start; }
+.funnel { display: flex; flex-direction: column; gap: 6px; }
+.group-title { font-size: 15px; font-weight: 600; margin: 4px 0 6px; display: flex; justify-content: space-between; gap: 12px; color: var(--ink); }
+.group-title span { font-weight: 400; color: var(--muted); white-space: nowrap; }
+.bar { width: min(100%, max(var(--w), 18rem)); margin: 0 auto; display: flex; align-items: center; gap: 12px; text-align: left; font: inherit; color: inherit;
+  background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 8px 14px 8px 8px; cursor: pointer; transition: border-color .15s, background-color .15s; }
+.bar:hover { border-color: var(--c); }
+.bar[aria-current="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 10%, var(--card)); box-shadow: inset 0 0 0 1px var(--c); }
+.bar.dashed { border-style: dashed; }
+.bar:focus-visible, .exit:focus-visible, .seg button:focus-visible, .nav button:focus-visible, .add-stage:focus-visible, .edit-fab:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.tile { flex: 0 0 34px; height: 34px; border-radius: 8px; background: var(--c); color: var(--on, var(--on-tile)); display: grid; place-items: center; font-weight: 600; font-size: 15px; font-variant-numeric: tabular-nums; transition: background-color .2s; }
+.bar .name { font-weight: 500; flex: 1 1 auto; min-width: 0; }
+.bar .note { display: block; font-size: 13px; color: var(--muted); font-weight: 400; }
+.bar .who { font-size: 13px; color: var(--c); font-weight: 500; white-space: nowrap; }
+.neck { width: 2px; height: 16px; background: var(--rule); margin: 0 auto; }
+.handoff { text-align: center; font-size: 14px; color: var(--muted); margin: 2px auto 8px; max-width: 34ch; }
+.exits-title { font-size: 15px; font-weight: 600; margin: 22px 0 8px; }
+.exits { display: flex; flex-wrap: wrap; gap: 8px; }
+.exit { font: inherit; font-size: 15px; cursor: pointer; background: transparent; color: var(--ink); border: 1px dashed var(--c); border-radius: 10px; padding: 8px 14px; }
+.exit[aria-current="true"] { background: color-mix(in srgb, var(--c) 12%, var(--card)); border-style: solid; }
+aside { position: sticky; top: 16px; }
+.panel { background: var(--card); border: 1px solid var(--rule); border-radius: 14px; padding: 22px 22px 18px; }
+.panel .grp { font-size: 14px; color: var(--muted); margin: 0 0 4px; }
+.panel h2 { font-size: 24px; font-weight: 600; margin: 0 0 10px; letter-spacing: -0.01em; display: flex; gap: 10px; align-items: center; }
+.panel h2 .tile { flex-basis: 30px; height: 30px; font-size: 14px; }
+.badge { display: inline-block; font-size: 13px; font-weight: 500; padding: 3px 10px; border-radius: 999px; margin: 0 0 14px; background: var(--soft); color: var(--ink); }
+.badge.proposal { background: transparent; border: 1px dashed var(--muted); color: var(--muted); }
+.sec { border-top: 1px solid var(--rule); padding: 12px 0 4px; }
+.sec h3 { font-size: 14px; font-weight: 600; margin: 0 0 6px; color: var(--muted); }
+.sec p { margin: 0 0 8px; }
+.owner { display: flex; gap: 10px; align-items: baseline; }
+.owner i { width: 10px; height: 10px; border-radius: 3px; background: var(--c); flex: 0 0 10px; transform: translateY(1px); }
+.fields { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 5px; }
+.fields li { position: relative; padding-left: 18px; }
+.fields li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 7px; height: 7px; border: 1.5px solid var(--c); border-radius: 2px; }
+.fields li.opt { color: var(--muted); }
+.fields li.opt::before { border-style: dashed; }
+.fields li.tinted { color: color-mix(in srgb, var(--c) 72%, var(--ink)); }
+.fields li.tinted::before { background: var(--c); }
+.fields li.tinted.opt::before { background: transparent; }
+.small { font-size: 14px; color: var(--muted); }
+.nav { display: flex; justify-content: space-between; gap: 8px; margin-top: 12px; }
+.nav button { font: inherit; font-size: 14px; background: var(--soft); color: var(--ink); border: 0; border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+.nav button:disabled { opacity: .4; cursor: default; }
+footer { margin-top: 30px; font-size: 14px; color: var(--muted); max-width: 90ch; }
+.wrap.narrow .layout { grid-template-columns: 1fr; }
+.wrap.narrow aside { position: static; }
+.funnel .panel { margin: 4px 0 10px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ---------- Конструктор ---------- */
+.edit-fab { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 25; display: inline-flex; align-items: center; gap: 8px;
+  font: inherit; font-size: 14px; font-weight: 500; background: var(--ink); color: var(--card); border: 0; border-radius: 999px; padding: 10px 16px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+body.editing { padding-right: var(--ed-w); }
+body.editing [data-ph] { outline: 1px dashed transparent; outline-offset: 3px; border-radius: 4px; transition: outline-color .15s; }
+body.editing [data-ph]:hover { outline-color: var(--muted); cursor: text; }
+body.editing [data-ph]:focus { outline: 2px solid var(--focus); }
+body.editing [data-ph]:empty::before { content: attr(data-ph); color: var(--muted); }
+body.editing .panel [data-sec], body.editing .panel [data-focus] { cursor: pointer; border-radius: 6px; transition: background-color .15s; }
+body.editing .panel [data-sec]:hover, body.editing .panel [data-focus]:hover { background: color-mix(in srgb, var(--focus) 7%, transparent); }
+.panel .ph { font-style: italic; }
+.add-stage { width: min(100%, 18rem); margin: 2px auto 0; font: inherit; font-size: 14px; color: var(--muted); background: transparent; border: 1.5px dashed var(--rule); border-radius: 10px; padding: 7px 12px; cursor: pointer; }
+.add-stage:hover, .add-exit:hover { color: var(--ink); border-color: var(--muted); }
+.exit.add-exit { color: var(--muted); border: 1.5px dashed var(--rule); }
+
+.editor { position: fixed; z-index: 30; top: 0; right: 0; bottom: 0; width: var(--ed-w); display: flex; flex-direction: column; background: var(--card); color: var(--ink);
+  border-left: 1px solid var(--rule); box-shadow: -8px 0 24px rgba(0,0,0,.06); font-size: 14px; line-height: 1.4; }
+.ed-head { display: flex; align-items: center; gap: 6px; padding: 12px 14px 0; }
+.ed-head strong { font-size: 16px; font-weight: 600; }
+.ed-status { flex: 1; min-width: 0; font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ed-tabs { display: flex; gap: 2px; padding: 8px 14px 0; border-bottom: 1px solid var(--rule); }
+.ed-tabs button { font: inherit; font-size: 14px; font-weight: 500; background: transparent; border: 0; border-bottom: 2px solid transparent; color: var(--muted); padding: 8px 10px; cursor: pointer; }
+.ed-tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--focus); }
+.ed-body { flex: 1; overflow-y: auto; padding: 14px 14px 48px; overscroll-behavior: contain; }
+.ed-top { margin: 0 0 12px; }
+.ed-block { border: 1px solid var(--rule); border-radius: 12px; padding: 12px; margin: 0 0 12px; }
+.ed-block > h3 { font-size: 14px; font-weight: 600; margin: 0 0 10px; color: var(--ink); }
+.ed-block > p { margin: 0 0 10px; }
+.ed-hint { font-size: 12.5px; color: var(--muted); font-weight: 400; }
+.ed-block > h3 .ed-hint { margin-left: 4px; }
+.fld { display: grid; gap: 4px; margin: 0 0 10px; min-width: 0; }
+.fld-l { font-size: 12.5px; color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 8px; }
+.row { display: flex; gap: 6px; align-items: center; min-width: 0; }
+.row > .inp { flex: 1 1 auto; }
+.btn-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 10px; }
+.btn-row:last-child { margin-bottom: 0; }
+.inp { font: inherit; font-size: 14px; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 8px; padding: 6px 9px; width: 100%; min-width: 0; }
+.inp:focus { outline: 2px solid var(--focus); outline-offset: -1px; background: var(--card); }
+.inp::placeholder { color: var(--muted); opacity: .75; }
+textarea.inp { resize: vertical; min-height: 34px; line-height: 1.4; display: block; }
+select.inp { cursor: pointer; }
+.inp.strong { font-weight: 600; }
+.btn { font: inherit; font-size: 13px; font-weight: 500; border: 1px solid var(--rule); background: var(--card); color: var(--ink); border-radius: 8px; padding: 5px 10px; cursor: pointer; white-space: nowrap; }
+.btn:hover:not(:disabled) { background: var(--soft); }
+.btn:focus-visible, .ed-tabs button:focus-visible, .clr:focus-visible, .chk input:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn.primary { background: var(--focus); border-color: transparent; color: var(--on-focus); }
+.btn.primary:hover:not(:disabled) { background: color-mix(in srgb, var(--focus) 85%, var(--ink)); }
+.btn.danger { color: var(--danger); }
+.btn.ib { width: 28px; height: 28px; padding: 0; display: inline-grid; place-items: center; font-size: 14px; line-height: 1; flex: 0 0 auto; }
+.clr { width: 32px; height: 28px; padding: 2px; border: 1px solid var(--rule); border-radius: 7px; background: var(--card); cursor: pointer; flex: 0 0 auto; }
+.clr::-webkit-color-swatch-wrapper { padding: 0; }
+.clr::-webkit-color-swatch { border: 0; border-radius: 4px; }
+.clr::-moz-color-swatch { border: 0; border-radius: 4px; }
+.swatch { width: 14px; height: 14px; border-radius: 4px; flex: 0 0 14px; }
+.chk { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.chk input { margin: 0; accent-color: var(--focus); }
+.chk.chk-line { display: flex; margin: 0 0 10px; font-size: 13.5px; color: var(--ink); white-space: normal; }
+.sec-card { border: 1px solid var(--rule); border-radius: 10px; padding: 10px; margin: 0 0 10px; background: color-mix(in srgb, var(--bg) 55%, var(--card)); }
+.sec-head { margin-bottom: 8px; align-items: flex-start; }
+.inp.one-line { resize: none; }
+.sec-head .type-sel { flex: 0 0 auto; width: auto; }
+.items { margin: 0 0 4px; }
+.item-row { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: flex-start; margin: 0 0 6px; }
+.item-row .item-text { flex: 1 1 170px; width: auto; resize: none; }
+.item-ctl { display: flex; gap: 3px; align-items: center; margin-left: auto; padding-top: 3px; }
+.list-row { display: flex; gap: 6px; align-items: center; margin: 0 0 6px; }
+.list-row .inp { flex: 1 1 0; }
+.list-head { display: flex; gap: 6px; margin: 0 0 4px; font-size: 12.5px; color: var(--muted); }
+.list-head span { flex: 1 1 0; }
+.list-head::after { content: ""; flex: 0 0 28px; }
+.editor .seg { margin: 0 0 12px; }
+.editor .seg button { font-size: 13px; padding: 5px 12px; }
+.ed-empty { text-align: center; padding: 32px 0; color: var(--muted); }
+.flash { animation: flash 1.4s ease-out; }
+@keyframes flash { from { box-shadow: 0 0 0 3px var(--focus); } to { box-shadow: 0 0 0 3px transparent; } }
+.btn.ed-min-btn { display: none; }
+.toast { position: fixed; z-index: 40; left: 50%; bottom: 20px; transform: translate(-50%, 16px); opacity: 0; pointer-events: none; display: flex; align-items: center; gap: 14px;
+  max-width: calc(100vw - 32px); background: var(--ink); color: var(--card); padding: 10px 14px; border-radius: 10px; font-size: 14px; box-shadow: 0 6px 20px rgba(0,0,0,.2); transition: opacity .2s, transform .2s; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.toast button { font: inherit; font-weight: 600; color: inherit; background: transparent; border: 0; padding: 0; text-decoration: underline; cursor: pointer; white-space: nowrap; }
+body.editing .toast { left: calc((100% - var(--ed-w)) / 2); }
+@media (max-width: 999px) {
+  .editor { top: auto; left: 0; width: auto; height: var(--ed-h); height: 58dvh; border-left: 0; border-top: 1px solid var(--rule); border-radius: 14px 14px 0 0; box-shadow: 0 -8px 24px rgba(0,0,0,.1); }
+  .editor.min { height: auto; }
+  .editor.min .ed-tabs, .editor.min .ed-body { display: none; }
+  .editor.min .ed-head { padding-bottom: 12px; }
+  .btn.ed-min-btn { display: inline-grid; }
+  body.editing { padding-right: 0; padding-bottom: var(--ed-h); padding-bottom: 58dvh; }
+  body.editing.ed-min { padding-bottom: 72px; }
+  body.editing .toast { left: 50%; bottom: calc(58dvh + 12px); }
+  body.editing.ed-min .toast { bottom: 84px; }
+}
+@media (max-width: 700px) { .wrap { padding-bottom: 88px; } }
+@media (max-width: 420px) {
+  .grid2 { grid-template-columns: 1fr; }
+  .wrap { padding-left: 16px; padding-right: 16px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <header>
+    <h1 id="tTitle" data-ph="Заголовок страницы">Единая воронка: от обращения до выигрыша</h1>
+    <p id="tIntro" data-ph="Вступление: как пользоваться схемой">Наведите курсор на стадию, чтобы увидеть детали, или нажмите, чтобы закрепить. Переключатель показывает, как устроено сейчас и что меняется по новому ТЗ.</p>
+  </header>
+
+  <div class="controls">
+    <div class="seg" id="modes" role="group" aria-label="Режим"></div>
+    <ul class="legend" id="legend" aria-label="Цвет — кто отвечает"></ul>
+  </div>
+
+  <div class="layout">
+    <div class="funnel" id="funnel"></div>
+    <aside id="aside"><div class="panel" id="panel" aria-live="polite"></div></aside>
+  </div>
+
+  <footer id="tFooter" data-ph="Подвал: источники">Источники: описание AS IS и TO BE воронок лидов и сделок (Д. Скакун); доска «Воронка», экспорт от 11.02.2026; решения начальника ОПиК от 28.09.2026. Где перечень полей в источниках не задан, это указано в карточке стадии.</footer>
+</div>
+
+<button type="button" class="edit-fab" id="editToggle" hidden><span aria-hidden="true">✎</span> Редактировать</button>
+
+<div class="editor" id="editor" role="complementary" aria-label="Конструктор воронки" hidden>
+  <div class="ed-head">
+    <strong>Конструктор</strong>
+    <span class="ed-status" id="edStatus"></span>
+    <button type="button" class="btn ib" data-act="undo" title="Отменить (Ctrl+Z)" aria-label="Отменить">↶</button>
+    <button type="button" class="btn ib" data-act="redo" title="Повторить (Ctrl+Shift+Z)" aria-label="Повторить">↷</button>
+    <button type="button" class="btn ib ed-min-btn" data-act="minimize" title="Свернуть или развернуть" aria-label="Свернуть или развернуть">▾</button>
+    <button type="button" class="btn primary" data-act="close">Готово</button>
+  </div>
+  <div class="ed-tabs" role="tablist" aria-label="Разделы конструктора">
+    <button type="button" role="tab" data-tab="stage" aria-selected="true">Стадия</button>
+    <button type="button" role="tab" data-tab="general" aria-selected="false">Общее</button>
+    <button type="button" role="tab" data-tab="file" aria-selected="false">Файл</button>
+  </div>
+  <div class="ed-body" id="edBody"></div>
+</div>
+<input type="file" id="importFile" accept=".json,.html,.htm,application/json,text/html" hidden>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Данные воронки. Конструктор перезаписывает этот блок при скачивании HTML. -->
+<script type="application/json" id="funnel-data">
+{
+ "version": 1,
+ "title": "Единая воронка: от обращения до выигрыша",
+ "intro": "Наведите курсор на стадию, чтобы увидеть детали, или нажмите, чтобы закрепить. Переключатель показывает, как устроено сейчас и что меняется по новому ТЗ.",
+ "footer": "Источники: описание AS IS и TO BE воронок лидов и сделок (Д. Скакун); доска «Воронка», экспорт от 11.02.2026; решения начальника ОПиК от 28.09.2026. Где перечень полей в источниках не задан, это указано в карточке стадии.",
+ "dashLegend": "Часть потока или предложение",
+ "viewOnly": false,
+ "modes": [
+  {
+   "id": "asis",
+   "label": "Как сейчас",
+   "suffix": "как сейчас"
+  },
+  {
+   "id": "tobe",
+   "label": "По новому ТЗ",
+   "suffix": "по новому ТЗ"
+  }
+ ],
+ "roles": [
+  {
+   "id": "opik",
+   "label": "ОПиК",
+   "light": "#0E7C7B",
+   "dark": "#43B9B3",
+   "legend": true
+  },
+  {
+   "id": "osp",
+   "label": "ОСП",
+   "light": "#4A55A2",
+   "dark": "#929BE3",
+   "legend": true
+  },
+  {
+   "id": "kam",
+   "label": "КАМ",
+   "light": "#A5670F",
+   "dark": "#E2A650",
+   "legend": true
+  },
+  {
+   "id": "ext",
+   "label": "Партнёры и логистика",
+   "light": "#66717D",
+   "dark": "#9AA5B1",
+   "legend": true
+  },
+  {
+   "id": "win",
+   "label": "Выигрыш",
+   "light": "#2E7D4F",
+   "dark": "#62C28F",
+   "legend": false
+  },
+  {
+   "id": "loss",
+   "label": "Потери",
+   "light": "#A5453A",
+   "dark": "#E4897B",
+   "legend": false
+  }
+ ],
+ "groups": [
+  {
+   "id": "lead",
+   "kind": "funnel",
+   "title": "Воронка лидов",
+   "handoff": "",
+   "range": true
+  },
+  {
+   "id": "deal",
+   "kind": "funnel",
+   "title": "Воронка сделок",
+   "handoff": "Качественный лид — сделка создаётся автоматически, ID лида сохраняется в сделке",
+   "range": true
+  },
+  {
+   "id": "final",
+   "kind": "final",
+   "title": "",
+   "handoff": "",
+   "range": false
+  },
+  {
+   "id": "exit",
+   "kind": "exit",
+   "title": "Выход из воронки",
+   "handoff": "",
+   "range": false
+  }
+ ],
+ "stages": [
+  {
+   "id": "l1",
+   "group": "lead",
+   "name": "Получено обращение",
+   "sub": "",
+   "tile": "",
+   "w": null,
+   "modes": {
+    "asis": {
+     "role": "opik",
+     "color": "",
+     "tag": "ОПиК",
+     "status": "",
+     "dashed": false,
+     "src": "Описание AS IS / TO BE воронки лидов",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "ОПиК"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Лид из ФОС на сайте или письма на info@ ждёт обработки. Спам закрывается, официальные обращения на бланке уходят в канцелярию, некоммерческие — в профильные подразделения. Тикеты ЛК сюда не попадают: ent становятся задачами, non-ent остаются вне CRM."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Есть коммерческий интерес: продукт, цены или покупка",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "Обязательные поля ФОС в описании не заданы.",
+       "empty": "Полей для перехода нет."
+      },
+      {
+       "type": "text",
+       "title": "Если не идёт дальше",
+       "text": "Нецелевое обращение: «ОПИК-СПАМ», «ОПИК-Некоммерческий запрос», «ОПИК-Маркетинг», «ОПИК-GR» и др."
+      }
+     ]
+    },
+    "tobe": {
+     "role": "opik",
+     "color": "",
+     "tag": "ОПиК",
+     "status": "Новое ТЗ",
+     "dashed": false,
+     "src": "Описание AS IS / TO BE воронки лидов",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "ОПиК; за качество лидов отвечает ДПиРП"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Порядок тот же. Тикеты ЛК включаются во входящий поток. Обязательность полей ФОС определяется по статистике всех лидов."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Обязательные поля ФОС (перечень — по итогам анализа)",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Дата входа на стадию",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "",
+       "empty": "Полей для перехода нет."
+      },
+      {
+       "type": "text",
+       "title": "Если не идёт дальше",
+       "text": "Нецелевое обращение — как сейчас."
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "l2",
+   "group": "lead",
+   "name": "Квалификация лида",
+   "sub": "",
+   "tile": "",
+   "w": null,
+   "modes": {
+    "asis": {
+     "role": "opik",
+     "color": "",
+     "tag": "ОПиК",
+     "status": "",
+     "dashed": false,
+     "src": "Описание AS IS / TO BE воронки лидов",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "ОПиК"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Обзвон заказчика: уточнение запроса, идентификация компании, проверка на дубль."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Компания идентифицирована",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Запрос уточнён",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Лид не дубль",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "Конкретный перечень полей в описании не приведён: «лид с заполненными полями переводится дальше».",
+       "empty": "Полей для перехода нет."
+      },
+      {
+       "type": "text",
+       "title": "Если не идёт дальше",
+       "text": "Потерянный клиент: «ОПИК-Недозвон» — связаться не удалось."
+      }
+     ]
+    },
+    "tobe": {
+     "role": "opik",
+     "color": "",
+     "tag": "ОПиК",
+     "status": "Новое ТЗ",
+     "dashed": false,
+     "src": "Описание AS IS / TO BE воронки лидов",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "ОПиК"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "То же, плюс данные по продуктам: продуктовые команды помогают насыщать лиды, новые команды сначала обрабатывают свои лиды сами, составляют чек-лист и передают процесс ОПиК."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Компания идентифицирована",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Запрос уточнён",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Лид не дубль",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Данные по продуктовому чек-листу",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Дата входа на стадию",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "",
+       "empty": "Полей для перехода нет."
+      },
+      {
+       "type": "text",
+       "title": "Если не идёт дальше",
+       "text": "Потерянный клиент — как сейчас."
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "l3",
+   "group": "lead",
+   "name": "Распределение лида",
+   "sub": "",
+   "tile": "",
+   "w": null,
+   "modes": {
+    "asis": {
+     "role": "osp",
+     "color": "",
+     "tag": "ОСП",
+     "status": "",
+     "dashed": false,
+     "src": "Описание AS IS / TO BE воронки лидов",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "ОСП"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Проверка, подходит ли лид под «Биржу лидов»: новые клиенты и запросы действующих заказчиков, если у КАМа нет по ним активных регистраций. Подходящие лиды уходят на Биржу, остальные — на верификацию компании."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Проверены активные регистрации КАМа по заказчику",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "Отдельных полей для перехода в описании нет.",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    },
+    "tobe": {
+     "role": "opik",
+     "color": "",
+     "tag": "ОПиК",
+     "status": "Предложение",
+     "dashed": true,
+     "src": "Описание AS IS / TO BE воронки лидов",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "ОПиК — вместе с проектом «Биржа лидов»"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Проект «Биржа лидов» передаётся в ОПиК, чтобы сократить число участников. Отбор на Биржу выполняет ОПиК."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Проверены активные регистрации КАМа по заказчику",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Дата входа на стадию",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "l4",
+   "group": "lead",
+   "name": "Передача партнёру",
+   "sub": "Биржа лидов, часть лидов",
+   "tile": "",
+   "w": null,
+   "modes": {
+    "asis": {
+     "role": "ext",
+     "color": "",
+     "tag": "Сисофт",
+     "status": "",
+     "dashed": true,
+     "src": "Описание AS IS / TO BE воронки лидов",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "Ответственный за Биржу лидов, далее Сисофт"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Раз в неделю все лиды стадии выгружаются и отправляются Сисофту. Результат работы Сисофта ведётся в таблице Excel; в CRM отмечается только, стал ли лид качественным. Воронку сделок Сисофт не ведёт."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Результат Сисофта: качественный или некачественный",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "",
+       "empty": "Полей для перехода нет."
+      },
+      {
+       "type": "text",
+       "title": "Если не идёт дальше",
+       "text": "Отказ Сисофта — лид закрывается некачественным."
+      }
+     ]
+    },
+    "tobe": {
+     "role": "opik",
+     "color": "",
+     "tag": "ОПиК",
+     "status": "Предложение, быстро не реализуется",
+     "dashed": true,
+     "src": "Описание AS IS / TO BE воронки лидов",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "ОПиК; обработку ведёт Сисофт"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Лиды передаются Сисофту в течение дня: «утром обработали — вечером отдали». С Сисофтом выстраивается обратная связь о том, какой информации ему не хватает."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Результат Сисофта: качественный или некачественный",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Дата входа на стадию",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "",
+       "empty": "Полей для перехода нет."
+      },
+      {
+       "type": "text",
+       "title": "Если не идёт дальше",
+       "text": "Отказ Сисофта — как сейчас."
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "l5",
+   "group": "lead",
+   "name": "Верификация компании",
+   "sub": "",
+   "tile": "",
+   "w": null,
+   "modes": {
+    "asis": {
+     "role": "osp",
+     "color": "",
+     "tag": "ОСП",
+     "status": "",
+     "dashed": false,
+     "src": "Описание AS IS / TO BE воронки лидов",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "ОСП"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Компания находится по имеющимся данным, контакт заносится в базу. Лид закрывается качественным — сделка создаётся автоматически, ID лида сохраняется в сделке."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Компания (контрагент)",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Контакт",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    },
+    "tobe": {
+     "role": "osp",
+     "color": "",
+     "tag": "ОСП",
+     "status": "Предложение: нужна оценка ОСП и команды CRM",
+     "dashed": true,
+     "src": "Описание AS IS / TO BE воронки лидов",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "ОСП или автоматизация"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Стадию предлагается упразднить или сократить поток через неё: карточка компании подтягивается автоматически, если поля заполнены."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Компания — подтягивается автоматически",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Контакт",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Дата входа на стадию",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "d6",
+   "group": "deal",
+   "name": "Возможности",
+   "sub": "",
+   "tile": "",
+   "w": null,
+   "modes": {
+    "asis": {
+     "role": "kam",
+     "color": "",
+     "tag": "КАМ",
+     "status": "",
+     "dashed": false,
+     "src": "Доска «Воронка», 11.02.2026",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "КАМ; АМ — по распределению КАМа; ПАМ — если лид передал партнёр"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Фиксация контакта, компании и первичного интереса. Клиент КАМа — КАМ заводит сделку сам. Клиента в базе нет — контрагент создаётся через ОСП задачей из сделки. Клиент закреплён за другим КАМом — возможность вести сделку проверяется через отдел сопровождения; порядок не определён."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Контакт",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Контрагент",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Первичный интерес: бизнес-задача, продукт или услуга",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Бюджет со слов клиента",
+         "opt": true,
+         "color": ""
+        },
+        {
+         "text": "Партнёр",
+         "opt": true,
+         "color": ""
+        }
+       ],
+       "note": "Регистрация в 1С — по желанию, через сопровождение продаж.",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    },
+    "tobe": {
+     "role": "opik",
+     "color": "",
+     "tag": "PM ОПиК",
+     "status": "Пилот «Промышленность»",
+     "dashed": false,
+     "src": "Описание TO BE воронки сделок (новое ТЗ)",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "PM ОПиК — только в пилоте «Промышленность»; в остальных колодцах — КАМ"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Дополнительное касание заказчика после первичной обработки: PM опрашивают клиента. Заполненная сделка предлагается КАМу со сроком; КАМ подтверждает, что берёт её в работу. Не взял — сделка уходит в проработку Сисофту."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "ЛПР",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Сроки и этапность проекта",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Текущее ПО и ИТ-инфраструктура",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Бюджет",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Знакомство с экосистемой Группы",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "КАМ подтвердил, что берёт сделку",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Дата входа на стадию",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "Поля опроса планируются, список может меняться, в CRM их пока нет. Передача Сисофту не согласована.",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "d7",
+   "group": "deal",
+   "name": "Квалификация",
+   "sub": "",
+   "tile": "",
+   "w": null,
+   "modes": {
+    "asis": {
+     "role": "kam",
+     "color": "",
+     "tag": "КАМ",
+     "status": "",
+     "dashed": false,
+     "src": "Доска «Воронка», 11.02.2026",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "КАМ; пресейл — по запросу; ПАМ — по желанию"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Уточнение истинных потребностей, сбор информации о команде клиента, формирование продуктовой корзины, проверка инфраструктуры и стоп-факторов, список пресейл-активностей. КАМ может подключить установочную встречу команды пресейла."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Детальный кейс клиента",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Бюджет",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Продукты и услуги",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Сроки проекта: начало и окончание",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Команда клиента",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Конкуренты",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Инфраструктура: ПО, железо, ограничения",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Стоп-факторы",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Партнёр",
+         "opt": true,
+         "color": ""
+        }
+       ],
+       "note": "Как добавлять команду клиента и связывать конкурентов с продуктами — в проработке.",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    },
+    "tobe": {
+     "role": "kam",
+     "color": "",
+     "tag": "КАМ",
+     "status": "Новое ТЗ",
+     "dashed": false,
+     "src": "Описание TO BE воронки сделок (новое ТЗ)",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "КАМ"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "КАМ встречается с ЛПР, подтверждает проект и определяет, кто фронтит пилот; заносит данные для решения о привлечении executive sponsor. Пресейл — силами ДВиС, продуктовой команды или дистрибьютора."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Проект подтверждён ЛПР",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Кто ведёт пилот",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Данные для решения по executive sponsor",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Дата входа на стадию",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "Точный перечень полей, разрешающих переход и запуск пилота, дорабатывается в пилоте.",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "d8",
+   "group": "deal",
+   "name": "Демонстрация",
+   "sub": "",
+   "tile": "",
+   "w": null,
+   "modes": {
+    "asis": {
+     "role": "kam",
+     "color": "",
+     "tag": "КАМ",
+     "status": "",
+     "dashed": false,
+     "src": "Доска «Воронка», 11.02.2026",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "КАМ ставит задачи; исполняют пресейл, продуктовые команды, ОПиК"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Демонстрации, пробные запуски и пилоты, в том числе отгрузка дистрибутива на тест. КАМ определяет, сколько можно потратить на пресейл, и ставит задачи в Битрикс24 и Jira; исполнители фиксируют статусы и время. Цель — снять блокеры и определить объём и условия поставки."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Пресейл-активности: даты, исполнители, ссылки на Jira, трудозатраты, статусы, результаты",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Продуктовая корзина",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Блокеры и способы их устранения",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Образ ПМИ и ПСИ",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "Даты, трудозатраты и ссылки на Jira планируется заполнять автоматически через интеграцию.",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    },
+    "tobe": {
+     "role": "kam",
+     "color": "",
+     "tag": "КАМ",
+     "status": "Новое ТЗ",
+     "dashed": false,
+     "src": "Описание TO BE воронки сделок (новое ТЗ)",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "КАМ; пилот проводят ДВиС, продуктовая команда или дистрибьютор"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Пилот; по его итогам информация в сделке заполняется или уточняется. У каждой активности есть ответственный, и её крайний срок виден в сделке."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Результаты пилота",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Дата входа на стадию",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "Отдельной стадии «Пилот» в текущем перечне нет.",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "d9",
+   "group": "deal",
+   "name": "Предложение",
+   "sub": "",
+   "tile": "",
+   "w": null,
+   "modes": {
+    "asis": {
+     "role": "kam",
+     "color": "",
+     "tag": "КАМ",
+     "status": "",
+     "dashed": false,
+     "src": "Доска «Воронка», 11.02.2026",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "КАМ — с клиентом; ПАМ — с партнёром; руководство и продуктовые команды — скидки"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Детализированное ценовое предложение: корзина, ТКП, согласование бюджета, сроков, скидок и условий. Документы для конкурса и контрактации готовит ДПиРП. Партнёр на этой стадии обязателен."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Товары (корзина)",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Отметки о согласовании индивидуальных скидок",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Драфт договора во вложении",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Партнёр",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Регистрация в 1С",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "Как фиксировать скидки — полями или товарами — не решено.",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    },
+    "tobe": {
+     "role": "kam",
+     "color": "",
+     "tag": "КАМ",
+     "status": "Новое ТЗ",
+     "dashed": false,
+     "src": "Описание TO BE воронки сделок (новое ТЗ)",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "КАМ"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Предложение фиксирует объём корзины и запускает согласование дополнительных скидок и условий, вывод спецартикулов в департаменте логистики. Дальше корзина меняется только с согласования руководителя."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Зафиксированная корзина",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Согласованные скидки и условия",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Дата входа на стадию",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "d10",
+   "group": "deal",
+   "name": "Контрактация",
+   "sub": "",
+   "tile": "",
+   "w": null,
+   "modes": {
+    "asis": {
+     "role": "kam",
+     "color": "",
+     "tag": "КАМ",
+     "status": "",
+     "dashed": false,
+     "src": "Доска «Воронка», 11.02.2026",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "Партнёр — юридические процедуры; КАМ и ПАМ — контроль хода конкурса"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Конкурс (не всегда) и подписание договора, в том числе рамочного. Конкурсы на площадках мониторятся; КАМ и ПАМ подключаются при проблемах; ПАМ сообщает «Астра Консалтинг» о контрактации с партнёром."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Итоги конкурса",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Факт подписания контракта",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Ссылка на закупочную процедуру",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Дистрибьютор",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "Дистрибьютор фиксируется обязательно на этой стадии.",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    },
+    "tobe": {
+     "role": "kam",
+     "color": "",
+     "tag": "КАМ",
+     "status": "Без изменений",
+     "dashed": false,
+     "src": "Описание TO BE воронки сделок (новое ТЗ)",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "КАМ, партнёр"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "В новом ТЗ стадия не меняется. Победа в конкурсе — одно из двух событий успеха сделки для расчёта конверсии."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Итоги конкурса",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Факт подписания контракта",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Ссылка на закупочную процедуру",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Дистрибьютор",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Дата входа на стадию",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "Отдельного признака победы в конкурсе в CRM пока нет.",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "d11",
+   "group": "deal",
+   "name": "Отгрузка",
+   "sub": "",
+   "tile": "",
+   "w": null,
+   "modes": {
+    "asis": {
+     "role": "ext",
+     "color": "",
+     "tag": "Логистика",
+     "status": "",
+     "dashed": false,
+     "src": "Доска «Воронка», 11.02.2026",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "Логисты; ПАМ или КАМ — уточнения"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Логисты получают заявку дистрибьютора со способом отгрузки (через ЛК или физически), проверяют регистрации и согласование цен. Отгрузка идёт от компании дистрибьютору, от него — клиенту."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Заказ и РТУ в 1С",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Связь сделки с РТУ",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Процент отгрузки к объёму сделки",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "Вход клиента в ЛК и активации — позже.",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    },
+    "tobe": {
+     "role": "ext",
+     "color": "",
+     "tag": "Логистика",
+     "status": "Без изменений",
+     "dashed": false,
+     "src": "Описание TO BE воронки сделок (новое ТЗ)",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "Логисты; ПАМ или КАМ — уточнения"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Без изменений. Заявка дистрибьютора на отгрузку — второе событие успеха сделки для расчёта конверсии."
+      },
+      {
+       "type": "list",
+       "title": "Обязательно для перехода дальше",
+       "items": [
+        {
+         "text": "Заказ и РТУ в 1С",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Связь сделки с РТУ",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Процент отгрузки к объёму сделки",
+         "opt": false,
+         "color": ""
+        },
+        {
+         "text": "Дата входа на стадию",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "win",
+   "group": "final",
+   "name": "Выигрыш",
+   "sub": "",
+   "tile": "✓",
+   "w": null,
+   "modes": {
+    "asis": {
+     "role": "win",
+     "color": "",
+     "tag": "",
+     "status": "",
+     "dashed": false,
+     "src": "Доска «Воронка», 11.02.2026",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "КАМ"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Отгрузка прошла в полном составе. Выигрыш и проигрыш оцениваются по каждой номенклатуре: выигрыш засчитывается, если выиграна хотя бы одна позиция, с расчётом доли выигрыша план/факт."
+      },
+      {
+       "type": "list",
+       "title": "Что фиксируется",
+       "items": [],
+       "note": "Финальная стадия.",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    },
+    "tobe": {
+     "role": "win",
+     "color": "",
+     "tag": "",
+     "status": "",
+     "dashed": false,
+     "src": "Решения начальника ОПиК от 28.09.2026",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "КАМ"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Для расчёта конверсии успех сделки — победа в конкурсе или заявка на отгрузку от дистрибьютора."
+      },
+      {
+       "type": "list",
+       "title": "Что фиксируется",
+       "items": [],
+       "note": "Решение от 28.09.2026. Признака и даты этих событий в CRM пока нет.",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "x1",
+   "group": "exit",
+   "name": "Некачественный лид",
+   "sub": "",
+   "tile": "",
+   "w": null,
+   "modes": {
+    "asis": {
+     "role": "loss",
+     "color": "",
+     "tag": "",
+     "status": "",
+     "dashed": false,
+     "src": "Описание AS IS / TO BE воронки лидов",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "ОПиК, ОСП или Сисофт — в зависимости от стадии"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Лид закрывается с артефактом. Нецелевые обращения — некоммерческие, их нельзя превратить в сделку. Потерянные клиенты — те, с кем не удалось связаться. Выдача ключей и расширение триала Termidesk сейчас закрываются одним артефактом «Выдача ключей Termidesk»."
+      },
+      {
+       "type": "list",
+       "title": "Что фиксируется",
+       "items": [
+        {
+         "text": "Артефакт закрытия",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "",
+       "empty": "Полей для перехода нет."
+      },
+      {
+       "type": "text",
+       "title": "Откуда попадают",
+       "text": "Стадии 1, 2 и 4."
+      }
+     ]
+    },
+    "tobe": {
+     "role": "loss",
+     "color": "",
+     "tag": "",
+     "status": "",
+     "dashed": false,
+     "src": "Решения начальника ОПиК от 28.09.2026",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "ОПиК, ОСП или Сисофт — в зависимости от стадии"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Так же. Для расчёта конверсии нецелевые обращения и выдача ключей Termidesk в знаменатель не входят, потерянные клиенты и триалы Termidesk — входят."
+      },
+      {
+       "type": "list",
+       "title": "Что фиксируется",
+       "items": [
+        {
+         "text": "Артефакт закрытия",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "",
+       "empty": "Полей для перехода нет."
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "x2",
+   "group": "exit",
+   "name": "Проигрыш",
+   "sub": "",
+   "tile": "",
+   "w": null,
+   "modes": {
+    "asis": {
+     "role": "loss",
+     "color": "",
+     "tag": "",
+     "status": "",
+     "dashed": false,
+     "src": "Доска «Воронка», 11.02.2026",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "КАМ"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Сделка проиграна; это последняя стадия. На какой стадии сделка была перед проигрышем, не фиксируется."
+      },
+      {
+       "type": "list",
+       "title": "Что фиксируется",
+       "items": [
+        {
+         "text": "Причина проигрыша",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "Нужна причина вида «дисквалифицирован».",
+       "empty": "Полей для перехода нет."
+      },
+      {
+       "type": "text",
+       "title": "Откуда попадают",
+       "text": "С любой стадии сделки."
+      }
+     ]
+    },
+    "tobe": {
+     "role": "loss",
+     "color": "",
+     "tag": "",
+     "status": "",
+     "dashed": false,
+     "src": "Описание TO BE воронки сделок (новое ТЗ)",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "КАМ"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Без изменений."
+      },
+      {
+       "type": "list",
+       "title": "Что фиксируется",
+       "items": [
+        {
+         "text": "Причина проигрыша",
+         "opt": false,
+         "color": ""
+        }
+       ],
+       "note": "",
+       "empty": "Полей для перехода нет."
+      },
+      {
+       "type": "text",
+       "title": "Откуда попадают",
+       "text": "С любой стадии сделки."
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "x3",
+   "group": "exit",
+   "name": "Холодильник",
+   "sub": "",
+   "tile": "",
+   "w": null,
+   "modes": {
+    "asis": {
+     "role": "ext",
+     "color": "",
+     "tag": "",
+     "status": "",
+     "dashed": false,
+     "src": "Доска «Воронка», 11.02.2026",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "КАМ"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Клиент отложил закупку на определённый срок. Замороженную часть сделки можно выделить в отдельную сделку."
+      },
+      {
+       "type": "list",
+       "title": "Что фиксируется",
+       "items": [],
+       "note": "Правила входа и выхода не описаны.",
+       "empty": "Полей для перехода нет."
+      },
+      {
+       "type": "text",
+       "title": "Откуда попадают",
+       "text": "С любой стадии сделки."
+      }
+     ]
+    },
+    "tobe": {
+     "role": "ext",
+     "color": "",
+     "tag": "",
+     "status": "",
+     "dashed": false,
+     "src": "Описание TO BE воронки сделок (новое ТЗ)",
+     "sections": [
+      {
+       "type": "owner",
+       "title": "Ответственный",
+       "text": "КАМ"
+      },
+      {
+       "type": "text",
+       "title": "Что происходит на стадии",
+       "text": "Без изменений. Для расчёта учитывается отдельной конверсией."
+      },
+      {
+       "type": "list",
+       "title": "Что фиксируется",
+       "items": [],
+       "note": "",
+       "empty": "Полей для перехода нет."
+      },
+      {
+       "type": "text",
+       "title": "Откуда попадают",
+       "text": "С любой стадии сделки."
+      }
+     ]
+    }
+   }
+  }
+ ]
+}
+</script>
+
+<script>
+(function () {
+'use strict';
+
+/* ---------- Утилиты ---------- */
+function $(id) { return document.getElementById(id); }
+function esc(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function str(v) { return v == null ? '' : String(v); }
+function arr(v) { return Array.isArray(v) ? v : []; }
+function uid(p) { return p + Math.random().toString(36).slice(2, 9); }
+function copy(o) { return JSON.parse(JSON.stringify(o)); }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+function hash(s) { var h = 5381; for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+function find(list, id) { for (var i = 0; i < list.length; i++) { if (list[i].id === id) return list[i]; } return null; }
+function swap(a, i, j) { if (j < 0 || j >= a.length) return; var t = a[i]; a[i] = a[j]; a[j] = t; }
+function each(nodes, fn) { Array.prototype.forEach.call(nodes, fn); }
+
+/* ---------- Цвета ---------- */
+function hex(v, def) {
+  v = str(v).trim();
+  if (/^#[0-9a-f]{3}$/i.test(v)) v = '#' + v[1] + v[1] + v[2] + v[2] + v[3] + v[3];
+  return /^#[0-9a-f]{6}$/i.test(v) ? v.toUpperCase() : def;
+}
+function rgb(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
+function toHex(c) { return '#' + c.map(function (x) { return ('0' + Math.round(clamp(x, 0, 255)).toString(16)).slice(-2); }).join('').toUpperCase(); }
+function toHsl(c) {
+  var r = c[0] / 255, g = c[1] / 255, b = c[2] / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), h = 0, s = 0, l = (mx + mn) / 2;
+  if (mx !== mn) {
+    var d = mx - mn;
+    s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+    h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    h /= 6;
+  }
+  return [h, s, l];
+}
+function fromHsl(h, s, l) {
+  if (!s) return [l * 255, l * 255, l * 255];
+  function f(p, q, t) { if (t < 0) t += 1; if (t > 1) t -= 1; if (t < 1 / 6) return p + (q - p) * 6 * t; if (t < 1 / 2) return q; if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6; return p; }
+  var q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+  return [f(p, q, h + 1 / 3) * 255, f(p, q, h) * 255, f(p, q, h - 1 / 3) * 255];
+}
+// Вариант цвета для тёмной темы: светлее и чуть приглушённее.
+function autoDark(h) {
+  var x = toHsl(rgb(h));
+  if (x[2] >= 0.6) return h;
+  return toHex(fromHsl(x[0], x[1] * 0.75, 0.48 + x[2] * 0.35));
+}
+function lum(h) {
+  var w = [0.2126, 0.7152, 0.0722];
+  return rgb(h).reduce(function (a, v, i) { v /= 255; return a + w[i] * (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)); }, 0);
+}
+var DARK_TEXT = '#10161B';
+function onTile(h) { var L = lum(h); return 1.05 / (L + 0.05) >= (L + 0.05) / (lum(DARK_TEXT) + 0.05) ? '#FFFFFF' : DARK_TEXT; }
+
+/* ---------- Данные ---------- */
+var KINDS = [['funnel', 'Нумерованные стадии'], ['final', 'Итог (плитка ✓)'], ['exit', 'Выходы из воронки']];
+var SEC_TYPES = [['text', 'Текст'], ['list', 'Список'], ['owner', 'Ответственный']];
+var EMPTY_LIST = 'Полей для перехода нет.';
+var PALETTE = ['#7B4FA0', '#1F6FB2', '#B8336A', '#3D7A1F', '#8A5A2B', '#C0392B', '#2C7A7B', '#5D6D7E'];
+
+function normItem(it) {
+  if (typeof it === 'string') return { text: it, opt: false, color: '' };
+  it = it || {};
+  return { text: str(it.text), opt: !!it.opt, color: hex(it.color, '') };
+}
+function normSection(x) {
+  x = x || {};
+  var ok = SEC_TYPES.some(function (t) { return t[0] === x.type; });
+  return { type: ok ? x.type : 'text', title: str(x.title), text: str(x.text), items: arr(x.items).map(normItem),
+    note: str(x.note), empty: x.empty == null ? EMPTY_LIST : str(x.empty) };
+}
+function normalize(d) {
+  d = d && typeof d === 'object' ? d : {};
+  function ids(prefix) {
+    var seen = {};
+    return function (raw) {
+      var id = str(raw).replace(/[^A-Za-z0-9_-]/g, '') || uid(prefix);
+      while (seen[id]) id = uid(prefix);
+      seen[id] = 1; return id;
+    };
+  }
+  var mId = ids('m'), rId = ids('r'), gId = ids('g'), sId = ids('s');
+  var modeRaw = [], roleMap = {}, groupMap = {};
+  var out = {
+    version: 1, title: str(d.title), intro: str(d.intro), footer: str(d.footer), dashLegend: str(d.dashLegend), viewOnly: !!d.viewOnly,
+    modes: arr(d.modes).map(function (m) { m = m || {}; modeRaw.push(str(m.id)); return { id: mId(m.id), label: str(m.label), suffix: str(m.suffix) }; }),
+    roles: arr(d.roles).map(function (r) {
+      r = r || {}; var l = hex(r.light, '#66717D'), id = rId(r.id); roleMap[str(r.id)] = id;
+      return { id: id, label: str(r.label), light: l, dark: hex(r.dark, '') || autoDark(l), legend: r.legend !== false };
+    }),
+    groups: arr(d.groups).map(function (g) {
+      g = g || {}; var id = gId(g.id); groupMap[str(g.id)] = id;
+      return { id: id, kind: KINDS.some(function (k) { return k[0] === g.kind; }) ? g.kind : 'funnel', title: str(g.title), handoff: str(g.handoff), range: !!g.range };
+    }),
+    stages: []
+  };
+  if (!out.modes.length) { modeRaw.push('main'); out.modes.push({ id: 'main', label: 'Основной', suffix: '' }); }
+  if (!out.roles.length) out.roles.push({ id: 'r1', label: 'Ответственный', light: '#0E7C7B', dark: '#43B9B3', legend: true });
+  if (!out.groups.length) out.groups.push({ id: 'g1', kind: 'funnel', title: 'Воронка', handoff: '', range: true });
+  arr(d.stages).forEach(function (s) {
+    s = s || {};
+    var src = s.modes && typeof s.modes === 'object' ? s.modes : {}, fallback = null;
+    modeRaw.forEach(function (k) { if (!fallback && src[k]) fallback = src[k]; });
+    var w = Number(s.w);
+    var st = { id: sId(s.id), group: groupMap[str(s.group)] || out.groups[0].id, name: str(s.name), sub: str(s.sub), tile: str(s.tile),
+      w: s.w != null && s.w !== '' && isFinite(w) ? clamp(Math.round(w), 10, 100) : null, modes: {} };
+    out.modes.forEach(function (m, k) {
+      var x = src[modeRaw[k]] || fallback || {};
+      st.modes[m.id] = { role: roleMap[str(x.role)] || out.roles[0].id, color: hex(x.color, ''), tag: str(x.tag), status: str(x.status),
+        dashed: !!x.dashed, src: str(x.src), sections: arr(x.sections).map(normSection) };
+    });
+    out.stages.push(st);
+  });
+  return out;
+}
+
+/* ---------- Состояние ---------- */
+var wrap = $('wrap'), funnel = $('funnel'), aside = $('aside'), panel = $('panel');
+var editor = $('editor'), edBody = $('edBody'), toastEl = $('toast'), fab = $('editToggle');
+var canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
+var mqDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+var DATA_TEXT = $('funnel-data').textContent;
+var BASE = hash(DATA_TEXT);
+var STORE_KEY = 'funnel-constructor:' + location.pathname;
+var data;
+try { data = normalize(JSON.parse(DATA_TEXT)); } catch (e) { data = normalize({}); }
+var VIEW_ONLY = data.viewOnly;
+data.viewOnly = false;
+var ORIGINAL = snap();
+
+var state = { mode: data.modes[0].id, pinned: null, editing: false, tab: 'stage', edKey: '', theme: '' };
+var META = {}, ORDER = [], els = {}, narrow = false;
+var hist = [], hi = -1, histTimer = null;
+var canStore = storageOk(), saveTimer = null;
+
+function snap() { return JSON.stringify(data); }
+function stageById(id) { return find(data.stages, id); }
+function groupById(id) { return find(data.groups, id); }
+function modeById(id) { return find(data.modes, id); }
+function roleOf(id) { return find(data.roles, id) || data.roles[0]; }
+function stagesIn(gid) { return data.stages.filter(function (s) { return s.group === gid; }); }
+function displayOrder() { var o = []; data.groups.forEach(function (g) { o = o.concat(stagesIn(g.id)); }); return o; }
+function md(s) { return s.modes[state.mode]; }
+function kindOf(s) { var g = groupById(s.group); return g ? g.kind : 'funnel'; }
+function groupName(g) { return g.title || (g.kind === 'final' ? 'Итог (без заголовка)' : g.kind === 'exit' ? 'Выходы (без заголовка)' : 'Группа без названия'); }
+function groupLabel(s) {
+  for (var i = data.groups.indexOf(groupById(s.group)); i >= 0; i--) { if (data.groups[i].title) return data.groups[i].title; }
+  return '';
+}
+function ensureState() {
+  if (!modeById(state.mode)) state.mode = data.modes[0].id;
+  if (!stageById(state.pinned)) { var o = displayOrder(); state.pinned = o.length ? o[0].id : null; }
+}
+
+function isDark() { var t = document.documentElement.getAttribute('data-theme'); return t ? t === 'dark' : mqDark.matches; }
+function themed(light, dark) { return isDark() ? (dark || autoDark(light)) : light; }
+function roleColor(r) { return themed(r.light, r.dark); }
+function stageColor(d) { return d.color ? themed(d.color) : roleColor(roleOf(d.role)); }
+function stageLight(d) { return d.color || roleOf(d.role).light; }
+function cvars(c) { return '--c:' + c + ';--on:' + onTile(c); }
+
+/* ---------- Отрисовка страницы ---------- */
+function computeMeta() {
+  META = {};
+  var n = 0, bars = [];
+  data.groups.forEach(function (g) {
+    stagesIn(g.id).forEach(function (s) {
+      var m = { kind: g.kind, tile: '', autoTile: '' };
+      if (g.kind === 'funnel') { m.autoTile = String(n + 1); if (s.tile) m.tile = s.tile; else { n++; m.tile = String(n); } }
+      else if (g.kind === 'final') { m.autoTile = '✓'; m.tile = s.tile || '✓'; }
+      if (g.kind !== 'exit') bars.push(s);
+      META[s.id] = m;
+    });
+  });
+  bars.forEach(function (s, i) {
+    var a = bars.length > 1 ? Math.round(100 - i * 46 / (bars.length - 1)) : 100;
+    META[s.id].autoW = a; META[s.id].w = s.w || a;
+  });
+  ORDER = displayOrder().map(function (s) { return s.id; });
+}
+
+function rangeText(list) {
+  var t = list.map(function (s) { return META[s.id].tile; }).filter(Boolean);
+  if (!t.length) return '';
+  return '<span>' + (t.length === 1 ? 'стадия ' + esc(t[0]) : 'стадии ' + esc(t[0]) + '–' + esc(t[t.length - 1])) + '</span>';
+}
+
+function renderTexts() {
+  [['tTitle', 'title'], ['tIntro', 'intro'], ['tFooter', 'footer']].forEach(function (p) {
+    var el = $(p[0]), t = data[p[1]];
+    if (document.activeElement !== el && el.textContent !== t) el.textContent = t;
+    el.hidden = !t && !state.editing;
+  });
+  document.title = data.title || 'Воронка';
+}
+
+function renderModes() {
+  var seg = $('modes');
+  seg.hidden = data.modes.length < 2;
+  seg.innerHTML = data.modes.map(function (m) {
+    return '<button type="button" data-mode="' + esc(m.id) + '" aria-pressed="' + (m.id === state.mode) + '">' + esc(m.label || 'Без названия') + '</button>';
+  }).join('');
+}
+
+function renderLegend() {
+  var h = data.roles.filter(function (r) { return r.legend && r.label; }).map(function (r) {
+    return '<li><i style="--c:' + roleColor(r) + '"></i>' + esc(r.label) + '</li>';
+  }).join('');
+  if (data.dashLegend) h += '<li><i class="dash"></i>' + esc(data.dashLegend) + '</li>';
+  $('legend').innerHTML = h;
+}
+
+function renderFunnel() {
+  if (panel.parentNode !== aside) aside.appendChild(panel);
+  computeMeta();
+  var h = '', firstBar = true;
+  data.groups.forEach(function (g) {
+    var list = stagesIn(g.id);
+    if (!list.length && !state.editing) return;
+    if (g.kind === 'exit') {
+      h += '<div class="exits-title">' + esc(g.title) + '</div><div class="exits">';
+      list.forEach(function (s) {
+        h += '<button type="button" class="exit" id="b-' + esc(s.id) + '" data-id="' + esc(s.id) + '">' + esc(s.name || 'Без названия') + '</button>';
+      });
+      if (state.editing) h += '<button type="button" class="exit add-exit" data-add="' + esc(g.id) + '">+ Выход</button>';
+      h += '</div>';
+      return;
+    }
+    if (!firstBar) h += '<div class="neck"></div>';
+    firstBar = false;
+    if (g.handoff) h += '<p class="handoff">' + esc(g.handoff) + '</p>';
+    if (g.title) h += '<div class="group-title">' + esc(g.title) + (g.range ? rangeText(list) : '') + '</div>';
+    list.forEach(function (s) {
+      h += '<button type="button" class="bar" id="b-' + esc(s.id) + '" data-id="' + esc(s.id) + '" style="--w:' + META[s.id].w + '%">' +
+        '<span class="tile">' + esc(META[s.id].tile) + '</span><span class="name">' + esc(s.name || 'Без названия') +
+        (s.sub ? '<span class="note">' + esc(s.sub) + '</span>' : '') + '</span><span class="who"></span></button>';
+    });
+    if (state.editing) h += '<button type="button" class="add-stage" data-add="' + esc(g.id) + '">+ Добавить стадию' + (g.title ? ' в «' + esc(g.title) + '»' : '') + '</button>';
+  });
+  funnel.innerHTML = h || '<p class="small">Стадий пока нет.</p>';
+  els = {};
+  data.stages.forEach(function (s) { els[s.id] = document.getElementById('b-' + s.id); });
+  paintBars();
+  placePanel();
+}
+
+function paintBars() {
+  data.stages.forEach(function (s) {
+    var el = els[s.id];
+    if (!el) return;
+    var d = md(s), c = stageColor(d), m = META[s.id];
+    el.style.setProperty('--c', c);
+    el.style.setProperty('--on', onTile(c));
+    el.setAttribute('aria-current', s.id === state.pinned ? 'true' : 'false');
+    if (m.kind !== 'exit') {
+      el.classList.toggle('dashed', !!d.dashed);
+      el.querySelector('.who').textContent = d.tag || '';
+      el.setAttribute('aria-label', (m.kind === 'funnel' ? 'Стадия ' + m.tile + ': ' : '') + s.name + (d.tag ? ', ' + d.tag : ''));
+    }
+  });
+}
+
+function paras(t) {
+  return t.split(/\n\s*\n/).map(function (p) { return '<p>' + esc(p.trim()).replace(/\n/g, '<br>') + '</p>'; }).join('');
+}
+
+function renderSection(sec, i, c) {
+  var title = sec.title ? '<h3>' + esc(sec.title) + '</h3>' : '';
+  if (sec.type === 'list') {
+    var h = '<div class="sec" data-sec="' + i + '" style="' + cvars(c) + '">' + title;
+    if (sec.items.length) {
+      h += '<ul class="fields">';
+      sec.items.forEach(function (it) {
+        var cls = (it.opt ? 'opt ' : '') + (it.color ? 'tinted' : '');
+        h += '<li' + (cls.trim() ? ' class="' + cls.trim() + '"' : '') + (it.color ? ' style="--c:' + themed(it.color) + '"' : '') + '>' +
+          esc(it.text) + (it.opt ? ' — по желанию' : '') + '</li>';
+      });
+      h += '</ul>';
+    } else if (sec.empty) {
+      h += '<p class="small">' + esc(sec.empty) + '</p>';
+    }
+    if (sec.note) h += '<p class="small">' + esc(sec.note) + '</p>';
+    return h + '</div>';
+  }
+  var empty = !sec.text.trim();
+  if (empty && !state.editing) return '';
+  var body;
+  if (sec.type === 'owner') body = '<p class="owner" style="' + cvars(c) + '"><i></i><span>' + (empty ? '<span class="small ph">Не указан</span>' : esc(sec.text)) + '</span></p>';
+  else body = empty ? '<p class="small ph">Пусто — заполните в конструкторе</p>' : paras(sec.text);
+  return '<div class="sec" data-sec="' + i + '">' + title + body + '</div>';
+}
+
+function renderPanel(id) {
+  var s = stageById(id);
+  if (!s) {
+    panel.innerHTML = '<p class="small" style="margin:0">' + (data.stages.length ? 'Выберите стадию.' : 'Стадий пока нет. Добавьте их в конструкторе.') + '</p>';
+    return;
+  }
+  var d = md(s), c = stageColor(d), m = META[s.id] || {}, mode = modeById(state.mode);
+  var label = [groupLabel(s), data.modes.length > 1 ? mode.suffix : ''].filter(Boolean).join(', ');
+  var h = label ? '<p class="grp">' + esc(label) + '</p>' : '';
+  h += '<h2 data-focus="name" style="' + cvars(c) + '">' + (m.kind !== 'exit' ? '<span class="tile">' + esc(m.tile) + '</span>' : '') + '<span>' + esc(s.name || 'Без названия') + '</span></h2>';
+  if (d.status) h += '<span class="badge' + (d.dashed ? ' proposal' : '') + '">' + esc(d.status) + '</span>';
+  d.sections.forEach(function (sec, i) { h += renderSection(sec, i, c); });
+  if (d.src) h += '<p class="small" style="margin:8px 0 0">Источник: ' + esc(d.src) + '</p>';
+  var i = ORDER.indexOf(id);
+  h += '<div class="nav"><button type="button" data-go="' + (i - 1) + '"' + (i <= 0 ? ' disabled' : '') + '>Предыдущая</button>' +
+       '<button type="button" data-go="' + (i + 1) + '"' + (i >= ORDER.length - 1 ? ' disabled' : '') + '>Следующая</button></div>';
+  panel.innerHTML = h;
+}
+
+function placePanel() {
+  var anchor = els[state.pinned];
+  if (narrow && anchor) {
+    if (META[state.pinned].kind === 'exit') anchor = anchor.parentNode;
+    if (anchor.nextSibling !== panel) anchor.parentNode.insertBefore(panel, anchor.nextSibling);
+  } else if (panel.parentNode !== aside) {
+    aside.appendChild(panel);
+  }
+}
+
+function refreshPreview() {
+  ensureState();
+  renderTexts(); renderModes(); renderLegend(); renderFunnel(); renderPanel(state.pinned);
+}
+function renderAll() { refreshPreview(); renderEditor(); }
+
+function pin(id, focus) {
+  if (!stageById(id)) return;
+  state.pinned = id; paintBars(); placePanel(); renderPanel(id);
+  if (focus && els[id]) els[id].focus();
+  if (narrow) panel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  if (state.editing) { state.tab = 'stage'; renderEditor(); }
+}
+
+function setMode(id) {
+  if (!modeById(id)) return;
+  state.mode = id;
+  each($('modes').querySelectorAll('[data-mode]'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-mode') === id ? 'true' : 'false'); });
+  paintBars(); renderPanel(state.pinned); renderEditor();
+}
+
+function checkNarrow() {
+  var n = wrap.clientWidth <= 860;
+  if (n === narrow) return;
+  narrow = n; wrap.classList.toggle('narrow', n); placePanel();
+}
+
+/* ---------- События страницы ---------- */
+funnel.addEventListener('click', function (e) {
+  var a = e.target.closest('[data-add]');
+  if (a) { addStage(a.getAttribute('data-add'), null); return; }
+  var b = e.target.closest('[data-id]');
+  if (b) pin(b.getAttribute('data-id'));
+});
+funnel.addEventListener('mouseover', function (e) {
+  if (!canHover.matches || narrow || state.editing) return;
+  var b = e.target.closest('[data-id]');
+  if (b) renderPanel(b.getAttribute('data-id'));
+});
+funnel.addEventListener('mouseleave', function () { if (canHover.matches && !narrow && !state.editing) renderPanel(state.pinned); });
+funnel.addEventListener('keydown', function (e) {
+  if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+  if (!e.target.closest('[data-id]')) return;
+  e.preventDefault();
+  var i = ORDER.indexOf(state.pinned) + (e.key === 'ArrowDown' ? 1 : -1);
+  if (i >= 0 && i < ORDER.length) pin(ORDER[i], true);
+});
+document.addEventListener('click', function (e) {
+  var g = e.target.closest('[data-go]');
+  if (g && !g.disabled) pin(ORDER[parseInt(g.getAttribute('data-go'), 10)], true);
+});
+$('modes').addEventListener('click', function (e) {
+  var b = e.target.closest('[data-mode]');
+  if (b) setMode(b.getAttribute('data-mode'));
+});
+panel.addEventListener('click', function (e) {
+  if (!state.editing || e.target.closest('[data-go]')) return;
+  var sec = e.target.closest('[data-sec]'), nm = e.target.closest('[data-focus]');
+  if (!sec && !nm) return;
+  state.tab = 'stage'; renderEditor();
+  var target = sec ? edBody.querySelector('[data-sec-card="' + sec.getAttribute('data-sec') + '"]') : edBody.querySelector('[data-b$=".name"]');
+  if (!target) return;
+  var f = target.matches('input, textarea') ? target : target.querySelector('textarea, input.inp');
+  target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  if (f) f.focus({ preventScroll: true });
+  var fl = sec ? target : target.closest('.ed-block');
+  fl.classList.remove('flash'); void fl.offsetWidth; fl.classList.add('flash');
+});
+
+// Заголовок, вступление и подвал правятся прямо на странице в режиме конструктора.
+[['tTitle', 'title'], ['tIntro', 'intro'], ['tFooter', 'footer']].forEach(function (p) {
+  var el = $(p[0]), key = p[1];
+  el.addEventListener('input', function () {
+    if (!state.editing) return;
+    data[key] = el.textContent;
+    if (key === 'title') document.title = data.title || 'Воронка';
+    var mirror = edBody.querySelector('[data-b="' + key + '"]');
+    if (mirror) { mirror.value = data[key]; if (mirror.tagName === 'TEXTAREA') autosize(mirror); }
+    commit(false);
+  });
+  el.addEventListener('keydown', function (e) { if (state.editing && e.key === 'Enter') { e.preventDefault(); el.blur(); } });
+  el.addEventListener('paste', function (e) {
+    if (!state.editing) return;
+    e.preventDefault();
+    var t = (e.clipboardData || window.clipboardData).getData('text').replace(/\s*\n\s*/g, ' ');
+    document.execCommand('insertText', false, t);
+  });
+  el.addEventListener('blur', function () {
+    if (!state.editing) return;
+    data[key] = el.textContent.replace(/\s+/g, ' ').trim();
+    el.textContent = data[key];
+    commit(true);
+  });
+});
+
+/* ---------- История и автосохранение ---------- */
+function pushHist() {
+  clearTimeout(histTimer); histTimer = null;
+  var s = snap();
+  if (hist[hi] === s) { updateHead(); return; }
+  hist = hist.slice(0, hi + 1); hist.push(s);
+  if (hist.length > 200) hist.shift();
+  hi = hist.length - 1;
+  updateHead();
+}
+function commit(now) {
+  if (now) pushHist(); else { clearTimeout(histTimer); histTimer = setTimeout(pushHist, 700); }
+  scheduleSave(); updateHead();
+}
+function restore(s) { data = JSON.parse(s); renderAll(); scheduleSave(); updateHead(); }
+function undo() { if (histTimer) pushHist(); if (hi <= 0) return; hi--; restore(hist[hi]); }
+function redo() { if (histTimer) pushHist(); if (hi >= hist.length - 1) return; hi++; restore(hist[hi]); }
+function undoTop(pinId) {
+  var at = hi;
+  return function () {
+    if (histTimer) pushHist();
+    if (hi !== at) { toast('После этого были другие изменения — используйте кнопку ↶'); return; }
+    undo();
+    if (pinId) pin(pinId);
+  };
+}
+
+function storageOk() { try { var k = '__funnel_test'; localStorage.setItem(k, '1'); localStorage.removeItem(k); return true; } catch (e) { return false; } }
+function scheduleSave() { if (!canStore) return; clearTimeout(saveTimer); saveTimer = setTimeout(saveDraft, 400); }
+function saveDraft() {
+  clearTimeout(saveTimer);
+  if (!canStore) return;
+  try {
+    if (snap() === ORIGINAL) localStorage.removeItem(STORE_KEY);
+    else localStorage.setItem(STORE_KEY, JSON.stringify({ base: BASE, at: Date.now(), data: data }));
+  } catch (e) { canStore = false; }
+  updateHead();
+}
+function loadDraft() {
+  if (!canStore) return null;
+  try { var o = JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); return o && o.base === BASE && o.data ? o : null; } catch (e) { return null; }
+}
+function updateHead() {
+  var u = editor.querySelector('[data-act="undo"]'), r = editor.querySelector('[data-act="redo"]');
+  u.disabled = hi <= 0 && !histTimer;
+  r.disabled = hi >= hist.length - 1;
+  var mod = snap() !== ORIGINAL;
+  $('edStatus').textContent = !mod ? 'Без изменений' : canStore ? 'Изменено · сохранено в браузере' : 'Изменено · не сохранено';
+}
+
+/* ---------- Конструктор: разметка ---------- */
+function attrs(path, o) {
+  return ' data-b="' + path + '"' + (o.hook ? ' data-hook="' + o.hook + '"' : '') + (o.r ? ' data-r' : '') +
+    (o.label ? ' aria-label="' + esc(o.label) + '" title="' + esc(o.label) + '"' : '') + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + (o.x || '');
+}
+function inp(path, val, o) {
+  o = o || {};
+  return '<input class="inp' + (o.cls ? ' ' + o.cls : '') + '" type="' + (o.num ? 'number" data-t="num" min="10" max="100" step="1" inputmode="numeric' : 'text') + '"' +
+    attrs(path, o) + ' value="' + esc(val) + '">';
+}
+function area(path, val, o) { o = o || {}; return '<textarea class="inp' + (o.cls ? ' ' + o.cls : '') + '" rows="' + (o.rows || 2) + '"' + attrs(path, o) + '>' + esc(val) + '</textarea>'; }
+function sel(path, val, options, o) {
+  o = o || {};
+  return '<select class="inp' + (o.cls ? ' ' + o.cls : '') + '"' + attrs(path, o) + '>' + options.map(function (p) {
+    return '<option value="' + esc(p[0]) + '"' + (p[0] === val ? ' selected' : '') + '>' + esc(p[1]) + '</option>';
+  }).join('') + '</select>';
+}
+function col(path, val, o) { return '<input type="color" class="clr"' + attrs(path, o || {}) + ' value="' + esc(val) + '">'; }
+function chk(path, val, label, o) {
+  o = o || {};
+  return '<label class="chk' + (o.cls ? ' ' + o.cls : '') + '"' + (o.title ? ' title="' + esc(o.title) + '"' : '') + '><input type="checkbox"' + attrs(path, o) + (val ? ' checked' : '') + '><span>' + esc(label) + '</span></label>';
+}
+function btn(label, act, arg, o) {
+  o = o || {};
+  return '<button type="button" class="btn' + (o.cls ? ' ' + o.cls : '') + '" data-act="' + act + '"' + (arg != null && arg !== '' ? ' data-arg="' + esc(arg) + '"' : '') +
+    (o.pressed != null ? ' aria-pressed="' + o.pressed + '"' : '') + (o.disabled ? ' disabled' : '') + (o.title ? ' title="' + esc(o.title) + '" aria-label="' + esc(o.title) + '"' : '') + '>' + esc(label) + '</button>';
+}
+function ib(sym, act, arg, title, disabled) { return btn(sym, act, arg, { cls: 'ib', title: title, disabled: disabled }); }
+function field(label, control) { return '<label class="fld"><span class="fld-l">' + esc(label) + '</span>' + control + '</label>'; }
+function fgroup(label, inner) { return '<div class="fld" role="group" aria-label="' + esc(label) + '"><span class="fld-l">' + esc(label) + '</span>' + inner + '</div>'; }
+function block(title, inner, hint) { return '<section class="ed-block"><h3>' + esc(title) + (hint ? '<span class="ed-hint">· ' + esc(hint) + '</span>' : '') + '</h3>' + inner + '</section>'; }
+function row(inner, cls) { return '<div class="row' + (cls ? ' ' + cls : '') + '">' + inner + '</div>'; }
+function btnRow(inner) { return '<div class="btn-row">' + inner + '</div>'; }
+function grid2(a, b) { return '<div class="grid2">' + a + b + '</div>'; }
+
+function edStage() {
+  var s = stageById(state.pinned);
+  if (!s) {
+    var g0 = data.groups.filter(function (g) { return g.kind !== 'exit'; })[0] || data.groups[0];
+    return '<div class="ed-empty"><p>Стадий пока нет.</p>' + btn('+ Добавить стадию', 'add-stage', g0.id, { cls: 'primary' }) + '</div>';
+  }
+  var si = data.stages.indexOf(s), P = 'stages.' + si, m = META[s.id], k = m.kind;
+  var d = md(s), MP = P + '.modes.' + state.mode, mode = modeById(state.mode), multi = data.modes.length > 1;
+  var sib = stagesIn(s.group), pos = sib.indexOf(s);
+  var h = '<p class="ed-hint ed-top">Нажмите на стадию в воронке или на блок в карточке, чтобы изменить его. Всё, что вы меняете, сразу видно на странице.</p>';
+
+  var c = field('Название', inp(P + '.name', s.name, { ph: 'Название стадии' }));
+  if (k !== 'exit') c += field('Подпись под названием', inp(P + '.sub', s.sub, { ph: 'Необязательно, например «часть лидов»' }));
+  c += field('Группа', sel(P + '.group', s.group, data.groups.map(function (g) { return [g.id, groupName(g)]; }), { hook: 'group', r: 1 }));
+  if (k !== 'exit') c += grid2(field('Номер на плитке', inp(P + '.tile', s.tile, { ph: 'авто: ' + m.autoTile })), field('Ширина полосы, %', inp(P + '.w', s.w == null ? '' : s.w, { num: 1, ph: 'авто: ' + m.autoW })));
+  c += btnRow(btn('↑ Выше', 'move-stage', -1, { disabled: pos === 0 }) + btn('↓ Ниже', 'move-stage', 1, { disabled: pos === sib.length - 1 }) +
+    btn('Дублировать', 'dup-stage') + btn(k === 'exit' ? '+ Выход после' : '+ Стадия после', 'add-after') + btn('Удалить', 'del-stage', '', { cls: 'danger' }));
+  h += block(k === 'exit' ? 'Выход из воронки' : 'Стадия', c, multi ? 'общее для всех вариантов' : '');
+
+  var v = '';
+  if (multi) {
+    v += '<div class="seg" role="group" aria-label="Редактируемый вариант">' + data.modes.map(function (x) {
+      return '<button type="button" data-act="set-mode" data-arg="' + esc(x.id) + '" aria-pressed="' + (x.id === state.mode) + '">' + esc(x.label || 'Без названия') + '</button>';
+    }).join('') + '</div>';
+  }
+  v += fgroup('Ответственный — задаёт цвет стадии', row('<i class="swatch" style="background:' + roleColor(roleOf(d.role)) + '"></i>' +
+    sel(MP + '.role', d.role, data.roles.map(function (r) { return [r.id, r.label || 'Без названия']; }), { hook: 'role', r: 1, label: 'Ответственный' })));
+  v += fgroup('Свой цвет стадии', row(col(MP + '.color', stageLight(d), { r: 1, label: 'Цвет стадии' }) +
+    (d.color ? btn('Как у ответственного', 'reset-color', MP + '.color') : '<span class="ed-hint">сейчас — цвет ответственного; для тёмной темы осветляется сам</span>')));
+  if (k !== 'exit') {
+    v += grid2(field('Метка на полосе', inp(MP + '.tag', d.tag, { ph: 'например, ОПиК' })), field('Плашка-статус', inp(MP + '.status', d.status, { ph: 'например, Новое ТЗ' })));
+    v += chk(MP + '.dashed', d.dashed, 'Пунктирная рамка — часть потока или предложение', { cls: 'chk-line' });
+  } else {
+    v += field('Плашка-статус', inp(MP + '.status', d.status, { ph: 'Необязательно' }));
+  }
+  v += field('Источник', inp(MP + '.src', d.src, { ph: 'Показывается внизу карточки' }));
+  if (multi) {
+    v += btnRow(data.modes.filter(function (x) { return x.id !== state.mode; }).map(function (x) {
+      return btn('Скопировать из «' + (x.label || 'без названия') + '»', 'copy-mode', x.id);
+    }).join(''));
+  }
+  h += block(multi ? 'Вариант «' + (mode.label || 'без названия') + '»' : 'Цвет и статус', v, multi ? 'переключатель над воронкой' : '');
+
+  var light = stageLight(d);
+  var sc = d.sections.map(function (sec, i) { return edSection(sec, i, MP + '.sections.' + i, d.sections.length, light); }).join('');
+  if (!d.sections.length) sc = '<p class="ed-hint">Блоков нет — добавьте первый.</p>';
+  sc += btnRow(btn('+ Текстовый блок', 'add-sec', 'text') + btn('+ Список полей', 'add-sec', 'list') + btn('+ Ответственный', 'add-sec', 'owner'));
+  h += block('Описание стадии', sc, 'блоки карточки');
+  return h;
+}
+
+function edSection(sec, i, p, n, light) {
+  var h = '<div class="sec-card" data-sec-card="' + i + '">';
+  h += row(area(p + '.title', sec.title, { rows: 1, ph: 'Заголовок блока', cls: 'strong one-line', label: 'Заголовок блока', x: ' data-single' }) +
+    sel(p + '.type', sec.type, SEC_TYPES, { r: 1, cls: 'type-sel', label: 'Тип блока' }) +
+    ib('↑', 'move-sec', i + ':-1', 'Блок выше', i === 0) + ib('↓', 'move-sec', i + ':1', 'Блок ниже', i === n - 1) + ib('✕', 'del-sec', i, 'Удалить блок'), 'sec-head');
+  if (sec.type === 'list') {
+    h += '<div class="items">' + sec.items.map(function (it, j) { return edItem(it, i, j, p + '.items.' + j, sec.items.length, light); }).join('') + '</div>';
+    h += btnRow(btn('+ Поле', 'add-item', i) + '<span class="ed-hint">Enter в поле — новое поле ниже</span>');
+    h += field('Примечание под списком', area(p + '.note', sec.note, { rows: 1, ph: 'Необязательно' }));
+    h += field('Текст, если список пуст', inp(p + '.empty', sec.empty, { ph: 'Пусто — ничего не показывать' }));
+  } else {
+    h += area(p + '.text', sec.text, { rows: 3, label: 'Текст блока', ph: sec.type === 'owner' ? 'Кто отвечает на стадии' : 'Текст блока. Пустая строка — новый абзац' });
+  }
+  return h + '</div>';
+}
+
+function edItem(it, i, j, p, n, light) {
+  return '<div class="item-row">' +
+    area(p + '.text', it.text, { rows: 1, cls: 'item-text', ph: 'Название поля', label: 'Поле ' + (j + 1), x: ' data-item="' + i + ':' + j + '"' }) +
+    '<div class="item-ctl">' +
+    chk(p + '.opt', it.opt, 'опц.', { title: 'Необязательное поле — «по желанию»' }) +
+    col(p + '.color', it.color || light, { r: 1, label: 'Цвет поля' }) +
+    (it.color ? ib('↺', 'reset-color', p + '.color', 'Сбросить цвет поля') : '') +
+    ib('↑', 'move-item', i + ':' + j + ':-1', 'Поле выше', j === 0) + ib('↓', 'move-item', i + ':' + j + ':1', 'Поле ниже', j === n - 1) +
+    ib('✕', 'del-item', i + ':' + j, 'Удалить поле') +
+    '</div></div>';
+}
+
+function edGeneral() {
+  var h = block('Тексты страницы',
+    field('Заголовок', inp('title', data.title, { ph: 'Заголовок страницы' })) +
+    field('Вступление', area('intro', data.intro, { ph: 'Необязательно' })) +
+    field('Подвал — источники', area('footer', data.footer, { ph: 'Необязательно' })) +
+    '<p class="ed-hint" style="margin:0">Эти тексты можно править и прямо на странице — просто нажмите на них.</p>');
+
+  var mh = '<div class="list-head"><span>Кнопка</span><span>Подпись в карточке</span></div>' + data.modes.map(function (m, i) {
+    return '<div class="list-row">' + inp('modes.' + i + '.label', m.label, { ph: 'Название кнопки', label: 'Название кнопки' }) +
+      inp('modes.' + i + '.suffix', m.suffix, { ph: 'например, как сейчас', label: 'Подпись в карточке' }) +
+      ib('✕', 'del-mode', i, 'Удалить вариант', data.modes.length < 2) + '</div>';
+  }).join('');
+  h += block('Варианты воронки', '<p class="ed-hint">Кнопки переключателя над воронкой. У каждой стадии для каждого варианта своё описание. Если вариант один, переключатель скрыт.</p>' +
+    mh + btnRow(btn('+ Вариант — копия текущего', 'add-mode')));
+
+  var rh = data.roles.map(function (r, i) {
+    return '<div class="list-row">' + col('roles.' + i + '.light', r.light, { hook: 'roleLight', label: 'Цвет в светлой теме' }) +
+      col('roles.' + i + '.dark', r.dark, { label: 'Цвет в тёмной теме' }) +
+      inp('roles.' + i + '.label', r.label, { ph: 'Название', label: 'Название' }) +
+      chk('roles.' + i + '.legend', r.legend, 'в легенде', { title: 'Показывать в легенде над воронкой' }) +
+      ib('✕', 'del-role', i, 'Удалить', data.roles.length < 2) + '</div>';
+  }).join('');
+  h += block('Ответственные и цвета', '<p class="ed-hint">Цвет задаёт полосы, плитки и маркеры полей. Первый квадрат — светлая тема, второй — тёмная: он подбирается сам при смене первого, но его можно поправить.</p>' +
+    rh + btnRow(btn('+ Ответственный', 'add-role')) +
+    field('Подпись пунктирного элемента легенды', inp('dashLegend', data.dashLegend, { ph: 'Пусто — не показывать' })));
+
+  var gh = data.groups.map(function (g, i) {
+    var n = stagesIn(g.id).length;
+    return '<div class="sec-card">' + row(inp('groups.' + i + '.title', g.title, { cls: 'strong', ph: g.kind === 'final' ? 'Без заголовка' : 'Заголовок группы', label: 'Заголовок группы' }) +
+      sel('groups.' + i + '.kind', g.kind, KINDS, { r: 1, cls: 'type-sel', label: 'Тип группы' }), 'sec-head') +
+      (g.kind !== 'exit' ? field('Текст перехода перед группой', area('groups.' + i + '.handoff', g.handoff, { rows: 1, ph: 'Необязательно' })) +
+        chk('groups.' + i + '.range', g.range, 'Показывать номера стадий рядом с заголовком', { cls: 'chk-line' }) : '') +
+      '<div class="row"><span class="ed-hint" style="flex:1">' + (n ? 'Стадий в группе: ' + n : 'Группа пуста') + '</span>' +
+      ib('↑', 'move-group', i + ':-1', 'Группа выше', i === 0) + ib('↓', 'move-group', i + ':1', 'Группа ниже', i === data.groups.length - 1) +
+      ib('✕', 'del-group', i, 'Удалить группу') + '</div></div>';
+  }).join('');
+  h += block('Группы стадий', gh + btnRow(btn('+ Группа', 'add-group')));
+
+  h += block('Тема предпросмотра', '<div class="seg" role="group" aria-label="Тема">' +
+    [['', 'Как в системе'], ['light', 'Светлая'], ['dark', 'Тёмная']].map(function (t) {
+      return '<button type="button" data-act="theme" data-arg="' + t[0] + '" aria-pressed="' + (state.theme === t[0]) + '">' + t[1] + '</button>';
+    }).join('') + '</div><p class="ed-hint" style="margin:0">Только для проверки цветов, в файл не сохраняется.</p>');
+  return h;
+}
+
+function edFile() {
+  var mod = snap() !== ORIGINAL;
+  var h = block('Сохранить', '<p>' + (canStore
+      ? 'Изменения сами сохраняются в этом браузере — можно закрыть страницу и вернуться. Чтобы сохранить их в файл или отправить коллегам, скачайте HTML.'
+      : 'Автосохранение в этом браузере недоступно. Скачайте HTML, чтобы не потерять изменения.') + '</p>' +
+    btnRow(btn('Скачать HTML с конструктором', 'export-html', 'edit', { cls: 'primary' }) + btn('Скачать только для просмотра', 'export-html', 'view')) +
+    '<p class="ed-hint" style="margin:0">Скачанный файл заменяет исходный. В версии для просмотра нет кнопки «Редактировать»; чтобы включить конструктор, добавьте к адресу файла <b>#edit</b>. Ctrl+S — быстрое скачивание HTML с конструктором.</p>');
+  h += block('Данные', btnRow(btn('Экспорт JSON', 'export-json') + btn('Импорт JSON или HTML', 'import')) +
+    '<p class="ed-hint" style="margin:0">Импорт заменяет текущую воронку данными из JSON или из HTML, скачанного этим конструктором. Отменить — кнопкой ↶.</p>');
+  h += block('Сброс', btnRow(btn('Вернуть версию из файла', 'reset', '', { cls: 'danger', disabled: !mod })) +
+    '<p class="ed-hint" style="margin:0">Отбрасывает все изменения после открытия файла. Отменить — кнопкой ↶.</p>');
+  return h;
+}
+
+function renderEditor() {
+  if (!state.editing) return;
+  each(editor.querySelectorAll('[data-tab]'), function (b) { b.setAttribute('aria-selected', b.getAttribute('data-tab') === state.tab ? 'true' : 'false'); });
+  var key = state.tab + '|' + state.pinned, top = key === state.edKey ? edBody.scrollTop : 0;
+  var a = document.activeElement, focusSel = null;
+  if (a && edBody.contains(a)) {
+    if (a.hasAttribute('data-b')) focusSel = '[data-b="' + a.getAttribute('data-b') + '"]';
+    else if (a.hasAttribute('data-act')) focusSel = '[data-act="' + a.getAttribute('data-act') + '"]' + (a.hasAttribute('data-arg') ? '[data-arg="' + a.getAttribute('data-arg') + '"]' : '');
+  }
+  edBody.innerHTML = state.tab === 'general' ? edGeneral() : state.tab === 'file' ? edFile() : edStage();
+  each(edBody.querySelectorAll('textarea'), autosize);
+  edBody.scrollTop = top; state.edKey = key;
+  if (focusSel) { var f = edBody.querySelector(focusSel); if (f && !f.disabled) f.focus({ preventScroll: true }); }
+  updateHead();
+}
+function autosize(t) { t.style.height = 'auto'; t.style.height = (t.scrollHeight + 2) + 'px'; }
+
+/* ---------- Конструктор: данные и действия ---------- */
+function walk(path) { var parts = path.split('.'), o = data; for (var i = 0; i < parts.length - 1; i++) o = o[parts[i]]; return { o: o, k: parts[parts.length - 1] }; }
+function getPath(p) { var w = walk(p); return w.o[w.k]; }
+function setPath(p, v) { var w = walk(p); w.o[w.k] = v; }
+function curStage() { return stageById(state.pinned); }
+function curMode() { var s = curStage(); return s ? md(s) : null; }
+function curPath() { return 'stages.' + data.stages.indexOf(curStage()) + '.modes.' + state.mode; }
+function changed() { refreshPreview(); renderEditor(); commit(true); }
+function focusB(path, select) {
+  var el = edBody.querySelector('[data-b="' + path + '"]');
+  if (!el) return;
+  el.focus({ preventScroll: true }); el.scrollIntoView({ block: 'nearest' });
+  if (select && el.select) el.select();
+}
+function newItem() { return { text: '', opt: false, color: '' }; }
+function newSection(type, kind) {
+  var t = { owner: 'Ответственный', text: 'Новый блок', list: kind === 'funnel' ? 'Обязательно для перехода дальше' : 'Что фиксируется' };
+  return { type: type, title: t[type] || '', text: '', items: [], note: '', empty: EMPTY_LIST };
+}
+function newStage(g, ref) {
+  var s = { id: uid('s'), group: g.id, name: g.kind === 'exit' ? 'Новый выход' : 'Новая стадия', sub: '', tile: '', w: null, modes: {} };
+  var loss = find(data.roles, 'loss');
+  data.modes.forEach(function (m) {
+    var role = ref ? ref.modes[m.id].role : (g.kind === 'exit' && loss ? loss.id : data.roles[0].id);
+    s.modes[m.id] = { role: role, color: '', tag: g.kind === 'exit' ? '' : roleOf(role).label, status: '', dashed: false, src: '',
+      sections: [newSection('owner', g.kind), newSection('text', g.kind), newSection('list', g.kind)] };
+    s.modes[m.id].sections[1].title = 'Что происходит на стадии';
+  });
+  return s;
+}
+function addStage(gid, afterId) {
+  var g = groupById(gid);
+  if (!g) return;
+  var list = stagesIn(gid), after = afterId ? stageById(afterId) : list[list.length - 1];
+  var s = newStage(g, after || null);
+  var at = after ? data.stages.indexOf(after) + 1 : data.stages.length;
+  data.stages.splice(at, 0, s);
+  state.pinned = s.id; state.tab = 'stage';
+  if (!state.editing) setEditing(true); else { refreshPreview(); renderEditor(); }
+  commit(true);
+  focusB('stages.' + data.stages.indexOf(s) + '.name', true);
+}
+function offerUndo(msg, pinId) { toast(msg, 'Отменить', undoTop(pinId)); }
+
+var HOOKS = {
+  role: function (path, v, prev) {
+    var d = getPath(path.replace(/\.role$/, '')), old = find(data.roles, prev);
+    if (!d.tag || (old && d.tag === old.label)) d.tag = roleOf(v).label;
+  },
+  roleLight: function (path, v) {
+    var dp = path.replace(/\.light$/, '.dark'), dv = autoDark(v);
+    setPath(dp, dv);
+    var el = edBody.querySelector('[data-b="' + dp + '"]');
+    if (el) el.value = dv;
+  },
+  group: function (path, v) {
+    var i = Number(path.split('.')[1]), s = data.stages[i], last = -1;
+    data.stages.splice(i, 1);
+    data.stages.forEach(function (x, k) { if (x.group === v) last = k; });
+    data.stages.splice(last >= 0 ? last + 1 : data.stages.length, 0, s);
+  }
+};
+
+function readVal(el) {
+  if (el.type === 'checkbox') return el.checked;
+  if (el.getAttribute('data-t') === 'num') {
+    if (el.value === '') return null;
+    var n = Math.round(Number(el.value));
+    return isFinite(n) ? clamp(n, 10, 100) : null;
+  }
+  return el.value;
+}
+function applyBind(el) {
+  var path = el.getAttribute('data-b'), prev = getPath(path), v = readVal(el);
+  if (prev === v) return false;
+  setPath(path, v);
+  var hk = el.getAttribute('data-hook');
+  if (hk && HOOKS[hk]) HOOKS[hk](path, v, prev, el);
+  refreshPreview();
+  return true;
+}
+edBody.addEventListener('input', function (e) {
+  var el = e.target;
+  if (!el.hasAttribute || !el.hasAttribute('data-b')) return;
+  if (el.tagName === 'TEXTAREA') autosize(el);
+  if (el.type === 'checkbox' || el.tagName === 'SELECT') return;
+  if (applyBind(el)) commit(false);
+});
+edBody.addEventListener('change', function (e) {
+  var el = e.target;
+  if (!el.hasAttribute || !el.hasAttribute('data-b')) return;
+  applyBind(el);
+  if (el.getAttribute('data-t') === 'num') { var v = getPath(el.getAttribute('data-b')); el.value = v == null ? '' : v; }
+  if (el.hasAttribute('data-r')) renderEditor();
+  commit(true);
+});
+// Enter в поле списка — новое поле ниже; Backspace в пустом — удалить его.
+edBody.addEventListener('keydown', function (e) {
+  var t = e.target, key = t.getAttribute && t.getAttribute('data-item');
+  if (e.key === 'Enter' && t.hasAttribute && t.hasAttribute('data-single')) { e.preventDefault(); return; }
+  if (!key || e.isComposing) return;
+  var p = key.split(':').map(Number), d = curMode();
+  if (!d || !d.sections[p[0]]) return;
+  var items = d.sections[p[0]].items, base = curPath() + '.sections.' + p[0] + '.items.';
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    applyBind(t);
+    items.splice(p[1] + 1, 0, newItem());
+    changed();
+    focusB(base + (p[1] + 1) + '.text');
+  } else if (e.key === 'Backspace' && t.value === '' && t.selectionStart === 0 && items.length > 1) {
+    e.preventDefault();
+    items.splice(p[1], 1);
+    changed();
+    var el = edBody.querySelector('[data-b="' + base + Math.max(0, p[1] - 1) + '.text"]');
+    if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+  }
+});
+
+var ACTS = {
+  undo: undo,
+  redo: redo,
+  close: function () { setEditing(false); },
+  minimize: function () {
+    var on = !editor.classList.contains('min');
+    editor.classList.toggle('min', on); document.body.classList.toggle('ed-min', on);
+    if (!on) each(edBody.querySelectorAll('textarea'), autosize);
+  },
+  'set-mode': function (id) { setMode(id); },
+  'add-stage': function (gid) { addStage(gid, null); },
+  'add-after': function () { var s = curStage(); if (s) addStage(s.group, s.id); },
+  'dup-stage': function () {
+    var s = curStage(); if (!s) return;
+    var c = copy(s); c.id = uid('s'); c.name = s.name + ' (копия)';
+    data.stages.splice(data.stages.indexOf(s) + 1, 0, c);
+    state.pinned = c.id; changed();
+    focusB('stages.' + data.stages.indexOf(c) + '.name', true);
+  },
+  'del-stage': function () {
+    var s = curStage(); if (!s) return;
+    var i = ORDER.indexOf(s.id);
+    state.pinned = ORDER[i + 1] || ORDER[i - 1] || null;
+    data.stages.splice(data.stages.indexOf(s), 1);
+    changed();
+    offerUndo('Удалено: «' + (s.name || 'без названия') + '»', s.id);
+  },
+  'move-stage': function (dir) {
+    var s = curStage(); if (!s) return;
+    var sib = stagesIn(s.group), other = sib[sib.indexOf(s) + Number(dir)];
+    if (!other) return;
+    var a = data.stages.indexOf(s), b = data.stages.indexOf(other);
+    data.stages[a] = other; data.stages[b] = s;
+    changed();
+  },
+  'reset-color': function (path) { setPath(path, ''); changed(); },
+  'copy-mode': function (from) {
+    var s = curStage(); if (!s || !s.modes[from]) return;
+    s.modes[state.mode] = copy(s.modes[from]);
+    changed();
+    offerUndo('Описание скопировано из «' + (modeById(from).label || 'без названия') + '»');
+  },
+  'add-sec': function (type) {
+    var d = curMode(); if (!d) return;
+    d.sections.push(newSection(type, kindOf(curStage())));
+    changed();
+    focusB(curPath() + '.sections.' + (d.sections.length - 1) + '.title', true);
+  },
+  'move-sec': function (arg) { var p = arg.split(':').map(Number); swap(curMode().sections, p[0], p[0] + p[1]); changed(); },
+  'del-sec': function (i) {
+    var sec = curMode().sections.splice(Number(i), 1)[0];
+    changed();
+    offerUndo('Блок «' + (sec.title || 'без заголовка') + '» удалён');
+  },
+  'add-item': function (i) {
+    var items = curMode().sections[Number(i)].items;
+    items.push(newItem()); changed();
+    focusB(curPath() + '.sections.' + i + '.items.' + (items.length - 1) + '.text');
+  },
+  'move-item': function (arg) { var p = arg.split(':').map(Number); swap(curMode().sections[p[0]].items, p[1], p[1] + p[2]); changed(); },
+  'del-item': function (arg) { var p = arg.split(':').map(Number); curMode().sections[p[0]].items.splice(p[1], 1); changed(); },
+  'add-mode': function () {
+    var id = uid('m'), cur = state.mode;
+    data.modes.push({ id: id, label: 'Новый вариант', suffix: 'новый вариант' });
+    data.stages.forEach(function (s) { s.modes[id] = copy(s.modes[cur]); });
+    state.mode = id; changed();
+    focusB('modes.' + (data.modes.length - 1) + '.label', true);
+  },
+  'del-mode': function (i) {
+    if (data.modes.length < 2) return;
+    var m = data.modes.splice(Number(i), 1)[0];
+    data.stages.forEach(function (s) { delete s.modes[m.id]; });
+    changed();
+    offerUndo('Вариант «' + (m.label || 'без названия') + '» удалён');
+  },
+  'add-role': function () {
+    var used = data.roles.map(function (r) { return r.light; });
+    var c = PALETTE.filter(function (x) { return used.indexOf(x) < 0; })[0] || PALETTE[data.roles.length % PALETTE.length];
+    data.roles.push({ id: uid('r'), label: 'Новый ответственный', light: c, dark: autoDark(c), legend: true });
+    changed();
+    focusB('roles.' + (data.roles.length - 1) + '.label', true);
+  },
+  'del-role': function (i) {
+    if (data.roles.length < 2) return;
+    var r = data.roles.splice(Number(i), 1)[0], fb = data.roles[0], n = 0;
+    data.stages.forEach(function (s) {
+      var hit = false;
+      Object.keys(s.modes).forEach(function (k) { if (s.modes[k].role === r.id) { s.modes[k].role = fb.id; hit = true; } });
+      if (hit) n++;
+    });
+    changed();
+    offerUndo('«' + (r.label || 'Без названия') + '» удалён' + (n ? '; стадии (' + n + ') переведены на «' + fb.label + '»' : ''));
+  },
+  'add-group': function () {
+    var g = { id: uid('g'), kind: 'funnel', title: 'Новая группа', handoff: '', range: true }, at = data.groups.length;
+    for (var i = 0; i < data.groups.length; i++) { if (data.groups[i].kind !== 'funnel') { at = i; break; } }
+    data.groups.splice(at, 0, g);
+    changed();
+    focusB('groups.' + at + '.title', true);
+  },
+  'move-group': function (arg) { var p = arg.split(':').map(Number); swap(data.groups, p[0], p[0] + p[1]); changed(); },
+  'del-group': function (i) {
+    var g = data.groups[Number(i)], n = stagesIn(g.id).length;
+    if (data.groups.length < 2) { toast('Нужна хотя бы одна группа'); return; }
+    if (n) { toast('В группе «' + groupName(g) + '» есть стадии (' + n + '). Перенесите или удалите их.'); return; }
+    data.groups.splice(Number(i), 1);
+    changed();
+    offerUndo('Группа «' + groupName(g) + '» удалена');
+  },
+  theme: function (v) {
+    state.theme = v || '';
+    if (state.theme) document.documentElement.setAttribute('data-theme', state.theme); else document.documentElement.removeAttribute('data-theme');
+    renderAll();
+  },
+  'export-html': function (kind) { download(fileName('html', kind === 'view' ? ' (просмотр)' : ''), buildHtml(kind === 'view'), 'text/html;charset=utf-8'); },
+  'export-json': function () { download(fileName('json', ''), JSON.stringify(data, null, 2), 'application/json;charset=utf-8'); },
+  'import': function () { $('importFile').click(); },
+  reset: resetToFile
+};
+
+editor.addEventListener('click', function (e) {
+  var t = e.target.closest('[data-tab]');
+  if (t) { state.tab = t.getAttribute('data-tab'); renderEditor(); return; }
+  var b = e.target.closest('[data-act]');
+  if (!b || b.disabled || !ACTS[b.getAttribute('data-act')]) return;
+  ACTS[b.getAttribute('data-act')](b.getAttribute('data-arg'), b);
+});
+
+function resetToFile() {
+  data = JSON.parse(ORIGINAL);
+  renderAll(); commit(true);
+  offerUndo('Возвращена версия из файла');
+}
+
+/* ---------- Файлы ---------- */
+function fileName(ext, suffix) {
+  var base = (data.title || 'Воронка').replace(/[\\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80) || 'Воронка';
+  return base + suffix + '.' + ext;
+}
+function download(name, text, type) {
+  try {
+    var url = URL.createObjectURL(new Blob([text], { type: type }));
+    var a = document.createElement('a');
+    a.href = url; a.download = name; a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 2000);
+    toast('Скачивается «' + name + '»');
+  } catch (e) {
+    toast('Не удалось скачать файл: ' + e.message);
+  }
+}
+function buildHtml(viewOnly) {
+  var out = copy(data);
+  out.viewOnly = !!viewOnly;
+  var root = document.documentElement.cloneNode(true);
+  root.removeAttribute('data-theme');
+  root.querySelector('body').removeAttribute('class');
+  root.querySelector('#wrap').className = 'wrap';
+  root.querySelector('#funnel').innerHTML = '';
+  root.querySelector('#aside').innerHTML = '<div class="panel" id="panel" aria-live="polite"></div>';
+  root.querySelector('#modes').innerHTML = '';
+  root.querySelector('#modes').removeAttribute('hidden');
+  root.querySelector('#legend').innerHTML = '';
+  root.querySelector('#edBody').innerHTML = '';
+  root.querySelector('#edStatus').textContent = '';
+  var ed = root.querySelector('#editor');
+  ed.setAttribute('hidden', ''); ed.className = 'editor';
+  var t = root.querySelector('#toast');
+  t.innerHTML = ''; t.className = 'toast';
+  root.querySelector('#editToggle').setAttribute('hidden', '');
+  [['#tTitle', 'title'], ['#tIntro', 'intro'], ['#tFooter', 'footer']].forEach(function (p) {
+    var el = root.querySelector(p[0]);
+    el.removeAttribute('contenteditable'); el.removeAttribute('spellcheck'); el.removeAttribute('hidden');
+    el.textContent = data[p[1]];
+  });
+  root.querySelector('title').textContent = data.title || 'Воронка';
+  root.querySelector('#funnel-data').textContent = '\n' + JSON.stringify(out, null, 1).replace(/</g, '\\u003c') + '\n';
+  return '<!DOCTYPE html>\n' + root.outerHTML + '\n';
+}
+$('importFile').addEventListener('change', function () {
+  var input = this, f = input.files && input.files[0];
+  if (!f) return;
+  var r = new FileReader();
+  r.onload = function () {
+    try {
+      var text = String(r.result), obj;
+      if (/^\s*[{\[]/.test(text)) obj = JSON.parse(text);
+      else {
+        var el = new DOMParser().parseFromString(text, 'text/html').getElementById('funnel-data');
+        if (!el) throw new Error('в файле нет данных воронки');
+        obj = JSON.parse(el.textContent);
+      }
+      if (!obj || !Array.isArray(obj.stages)) throw new Error('неизвестный формат');
+      data = normalize(obj); data.viewOnly = false;
+      state.mode = data.modes[0].id; state.pinned = null;
+      renderAll(); commit(true);
+      offerUndo('Импортировано стадий: ' + data.stages.length);
+    } catch (e) {
+      toast('Не удалось импортировать: ' + e.message);
+    }
+    input.value = '';
+  };
+  r.readAsText(f);
+});
+
+/* ---------- Режим конструктора ---------- */
+function setEditing(on) {
+  if (!on && histTimer) pushHist();
+  state.editing = on;
+  document.body.classList.toggle('editing', on);
+  editor.hidden = !on;
+  panel.setAttribute('aria-live', on ? 'off' : 'polite');
+  fab.hidden = on || (VIEW_ONLY && location.hash !== '#edit');
+  ['tTitle', 'tIntro', 'tFooter'].forEach(function (id) {
+    var el = $(id);
+    if (on) { el.setAttribute('contenteditable', 'true'); el.setAttribute('spellcheck', 'true'); }
+    else { el.removeAttribute('contenteditable'); el.removeAttribute('spellcheck'); }
+  });
+  if (!on) {
+    editor.classList.remove('min'); document.body.classList.remove('ed-min');
+    if (snap() !== ORIGINAL) toast(canStore ? 'Изменения сохранены в браузере. Чтобы получить файл — «Файл → Скачать HTML»' : 'Не забудьте скачать HTML — автосохранение недоступно');
+  }
+  refreshPreview();
+  if (on) renderEditor();
+  checkNarrow();
+}
+fab.addEventListener('click', function () { setEditing(true); });
+
+var toastTimer = null;
+function toast(msg, actLabel, fn) {
+  toastEl.innerHTML = '<span>' + esc(msg) + '</span>' + (actLabel ? '<button type="button">' + esc(actLabel) + '</button>' : '');
+  if (actLabel) toastEl.querySelector('button').onclick = function () { hideToast(); fn(); };
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, actLabel ? 7000 : 4000);
+}
+function hideToast() { toastEl.classList.remove('show'); }
+
+function isField(el) { return el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)); }
+document.addEventListener('keydown', function (e) {
+  if (!state.editing || !(e.ctrlKey || e.metaKey) || e.altKey) return;
+  if (e.code === 'KeyS') { e.preventDefault(); ACTS['export-html']('edit'); return; }
+  if (isField(e.target)) return;
+  if (e.code === 'KeyZ') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); }
+  else if (e.code === 'KeyY') { e.preventDefault(); redo(); }
+});
+
+function onTheme() { renderAll(); }
+if (mqDark.addEventListener) mqDark.addEventListener('change', onTheme); else if (mqDark.addListener) mqDark.addListener(onTheme);
+if (window.ResizeObserver) new ResizeObserver(checkNarrow).observe(wrap); else window.addEventListener('resize', checkNarrow);
+window.addEventListener('hashchange', function () {
+  if (location.hash === '#edit') { fab.hidden = state.editing; if (!state.editing) setEditing(true); }
+});
+window.addEventListener('pagehide', function () { if (histTimer) pushHist(); saveDraft(); });
+window.addEventListener('beforeunload', function (e) {
+  if (!canStore && snap() !== ORIGINAL) { e.preventDefault(); e.returnValue = ''; }
+});
+
+/* ---------- Запуск ---------- */
+var draft = loadDraft();
+if (draft) { try { data = normalize(draft.data); data.viewOnly = false; } catch (e) { data = JSON.parse(ORIGINAL); } }
+hist = [snap()]; hi = 0;
+fab.hidden = VIEW_ONLY && location.hash !== '#edit';
+checkNarrow();
+refreshPreview();
+if (draft && snap() !== ORIGINAL) toast('Восстановлены ваши изменения, сохранённые в этом браузере', 'Вернуть версию из файла', resetToFile);
+if (location.hash === '#edit') setEditing(true);
+})();
+</script>
+</body>
+</html>
