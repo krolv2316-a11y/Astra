@@ -75,11 +75,11 @@ const noHScroll = (page) =>
 
   const t0 = Date.now();
   await upload(page, fx('synthetic_text.xlsx'));
-  check('загрузка синтетической выгрузки (3 262 строки)', await page.$('#report'), `${Date.now() - t0} мс`);
+  check('загрузка синтетической выгрузки (3 263 строки)', await page.$('#report'), `${Date.now() - t0} мс`);
   const kpiTextFile = await kpiText(page);
   const summaryTextFile = await tableText(page, '#summaryTable');
   const headerInfo = await page.textContent('#upload');
-  check('блок загрузки: имя, строки, период создания, срез', /synthetic_text\.xlsx/.test(headerInfo) && /строк прочитано: 3\s262/.test(headerInfo) && /период создания: 12\.01\.2026/.test(headerInfo) && /срез на 28\.10\.2026/.test(headerInfo), headerInfo.replace(/\s+/g, ' ').slice(0, 160));
+  check('блок загрузки: имя, строки, период создания, срез', /synthetic_text\.xlsx/.test(headerInfo) && /строк прочитано: 3\s263/.test(headerInfo) && /период создания: 12\.01\.2026/.test(headerInfo) && /срез на 28\.10\.2026/.test(headerInfo), headerInfo.replace(/\s+/g, ' ').slice(0, 160));
 
   // Ошибка структуры: прежние данные не теряются.
   await upload(page, fx('synthetic_no_executor.xlsx'));
@@ -157,6 +157,11 @@ const noHScroll = (page) =>
   const stored = await page.evaluate(() => localStorage.getItem('osp-dashboard.settings.v1'));
   check('в localStorage только настройки', stored && stored.includes('А. Иванова') && !stored.includes('Синтетическое') && !stored.includes('30013'), `${stored.length} символов`);
 
+  // Порог малой выборки.
+  await page.fill('#smallN', '10');
+  await page.waitForTimeout(900);
+  check('порог «малая выборка» меняет подписи', (await page.textContent('#card-dyn-a .small-note')).includes('n < 10'));
+
   // Скрытие тестового типа.
   await page.check('.map-item:has-text("ТЕСТ Произвести верификацию Клиента") input[type=checkbox]');
   await page.waitForTimeout(400);
@@ -180,7 +185,7 @@ out['dyn_header'] = [c.value for c in dyn[1]]
 out['dyn_emps'] = sorted({r[4].value for r in dyn.iter_rows(min_row=2)})
 out['mean_type'] = type(dyn['G6'].value).__name__
 txt = json.dumps([[c.value for c in row] for ws in wb for row in ws.iter_rows()], default=str, ensure_ascii=False)
-out['sensitive'] = any(x in txt for x in ['Синтетическое', 'ООО «Тест', 'ИНН'])
+out['sensitive'] = any(x in txt for x in ['Синтетическое', 'ООО «Тест', 'ИНН', '7812345678', 'Пример Сервис'])
 out['renamed'] = 'А. Иванова' in txt and 'Распределение лида' in txt
 print(json.dumps(out, ensure_ascii=False))
 `, xlsxPath]).toString();

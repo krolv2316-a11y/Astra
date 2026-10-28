@@ -150,6 +150,23 @@ export function renderSettings(actions) {
           }),
         ),
         h('p', { class: 'hint' }, 'Типы, у которых во всей выборке не более N задач, объединяются в «Прочие». 0 — не объединять.'),
+        h(
+          'div',
+          { class: 'inline-grid' },
+          h('label', { for: 'smallN' }, 'Малая выборка: n <'),
+          h('input', {
+            id: 'smallN',
+            type: 'number',
+            min: '1',
+            step: '1',
+            value: String(state.settings.smallN),
+            oninput: (e) => {
+              const n = Number(e.target.value);
+              if (Number.isFinite(n) && n >= 1) applyLater((s) => (s.smallN = Math.round(n)));
+            },
+          }),
+        ),
+        h('p', { class: 'hint' }, 'Точки динамики с меньшим числом наблюдений рисуются полым маркером.'),
         titles.map((title) => {
           const c = cfgOf(title);
           return h(

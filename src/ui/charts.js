@@ -2,7 +2,7 @@
 
 import { Chart, BarController, BarElement, LineController, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
 import { fmtAuto, fmtFull, fmtInt, fmtNum, fmtPct, axisUnit } from '../core/format.js';
-import { METRIC_LABEL, SMALL_N } from '../core/model.js';
+import { METRIC_LABEL } from '../core/model.js';
 
 Chart.register(BarController, BarElement, LineController, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -158,7 +158,7 @@ export function renderBarChart(holder, { pivot, mode, hidden, onToggle }) {
  * Линии динамики показателя.
  * series: [{ key, name, isTotal, colorIdx, cells }], periods: [...], stat: 'mean' | 'median'.
  */
-export function renderLineChart(holder, { metric, periods, series, stat, hidden, onToggle, dayHours, calendarMode }) {
+export function renderLineChart(holder, { metric, periods, series, stat, hidden, onToggle, dayHours, calendarMode, smallN }) {
   let max = 0;
   for (const s of series) for (const c of s.cells) if (c[metric].n && c[metric][stat] > max) max = c[metric][stat];
   const unit = axisUnit(metric, max, dayHours, calendarMode);
@@ -166,7 +166,7 @@ export function renderLineChart(holder, { metric, periods, series, stat, hidden,
   const datasets = series.map((s, i) => {
     const color = s.isTotal ? token('--series-total') : seriesColor(s.colorIdx);
     const st = s.isTotal ? { shape: 'rectRot', dash: [] } : seriesStyle(s.colorIdx);
-    const small = s.cells.map((c) => c[metric].n > 0 && c[metric].n < SMALL_N);
+    const small = s.cells.map((c) => c[metric].n > 0 && c[metric].n < smallN);
     return {
       label: s.name,
       seriesKey: s.key,
@@ -213,7 +213,7 @@ export function renderLineChart(holder, { metric, periods, series, stat, hidden,
                 `${ctx.dataset.label}`,
                 `  среднее: ${fmtAuto(metric, c.mean, dayHours, calendarMode)} (${fmtFull(metric, c.mean, calendarMode)})`,
                 `  медиана: ${fmtAuto(metric, c.median, dayHours, calendarMode)} (${fmtFull(metric, c.median, calendarMode)})`,
-                `  n = ${fmtInt(c.n)}${c.n < SMALL_N ? ' — малая выборка' : ''}`,
+                `  n = ${fmtInt(c.n)}${c.n < smallN ? ' — малая выборка' : ''}`,
               ];
               return lines;
             },

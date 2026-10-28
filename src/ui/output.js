@@ -4,7 +4,7 @@ import { h, clear, icon, $ } from './dom.js';
 import { fmtInt, fmtPct, fmtAuto, fmtFull, NO_DATA, plural } from '../core/format.js';
 import { fmtDateTime } from '../core/dates.js';
 import { REQUIRED } from '../core/parse.js';
-import { METRICS, METRIC_LABEL, METRIC_SHORT, SMALL_N } from '../core/model.js';
+import { METRICS, METRIC_LABEL, METRIC_SHORT } from '../core/model.js';
 import { renderBarChart, renderLineChart, destroyChart, typeColor } from './charts.js';
 import { filterCaption, sliceText, outlierMethodText } from './caption.js';
 import { qualityIssues } from './quality.js';
@@ -176,7 +176,7 @@ export function renderOutput(actions) {
         'div',
         { class: 'chart-legend-note' },
         h('span', null, '◆ Итого — по всем задачам выбранных сотрудников (не среднее средних)'),
-        h('span', null, h('span', { class: 'hollow' }), `полый маркер — малая выборка (n < ${SMALL_N})`),
+        h('span', { class: 'small-note' }, ''),
         h('span', null, 'разрыв линии — нет данных'),
         h('span', { class: 'no-export' }, 'клик по легенде скрывает серию'),
       ),
@@ -222,6 +222,9 @@ export function refreshOutput(actions) {
   $('#filterCaption').textContent = caption;
   $('#reportMeta').textContent = `${slice} · файл «${state.dataset.fileName}» · ${caption}`;
   for (const el of document.querySelectorAll('#report .caption-line')) el.textContent = `${caption} · ${slice}`;
+  for (const el of document.querySelectorAll('#report .small-note')) {
+    el.replaceChildren(h('span', { class: 'hollow' }), `полый маркер — малая выборка (n < ${state.settings.smallN})`);
+  }
 
   const alerts = clear($('#alerts'));
   if (state.loadError) alerts.append(loadErrorAlert(actions));
@@ -431,6 +434,7 @@ function renderDyn(actions, d) {
       onToggle: (k) => actions.toggleSeries(d.metric, k),
       dayHours: state.prep.dayHours,
       calendarMode: state.prep.calendarMode,
+      smallN: state.settings.smallN,
     });
   }
   const tbox = clear($(`#${d.id}-table`));
@@ -449,7 +453,7 @@ function renderDyn(actions, d) {
         const c = s.cells[i][m];
         if (!c.n) return [h('td', { class: 'n sep' }, '0'), h('td', { class: 'n nodata', colspan: '2' }, NO_DATA)];
         return [
-          h('td', { class: 'n sep' }, fmtInt(c.n), c.n < SMALL_N ? h('span', { class: 'badge-small', title: 'малая выборка' }, 'мало') : null),
+          h('td', { class: 'n sep' }, fmtInt(c.n), c.n < state.settings.smallN ? h('span', { class: 'badge-small', title: 'малая выборка' }, 'мало') : null),
           h('td', { class: 'n', title: fmtFull(m, c.mean, cal) }, fmtAuto(m, c.mean, dh, cal)),
           h('td', { class: 'n', title: fmtFull(m, c.median, cal) }, fmtAuto(m, c.median, dh, cal)),
         ];

@@ -155,6 +155,9 @@ test('настройки: нормализация и импорт', () => {
   assert.throws(() => parseSettingsJson('{'), /JSON/);
   assert.throws(() => parseSettingsJson('{"foo":1}'), /не похож/);
   assert.equal(parseSettingsJson('{"otherThreshold": 3}').otherThreshold, 3);
+  assert.equal(normalizeSettings({}).smallN, 5);
+  assert.equal(normalizeSettings({ smallN: '10' }).smallN, 10);
+  assert.equal(normalizeSettings({ smallN: 0 }).smallN, 5);
 });
 
 test('медиана через отбор совпадает с сортировкой', async () => {

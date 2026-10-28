@@ -20,6 +20,7 @@ export function defaultSettings() {
     employees: {},
     types: {},
     otherThreshold: 5,
+    smallN: 5,
     bots: ['Астра Бот(ОПиК)'],
     calendar: {
       dayStart: '09:00',
@@ -77,6 +78,7 @@ export function normalizeSettings(raw) {
     }
   }
   s.otherThreshold = Math.round(num(raw.otherThreshold, 0, 100000, d.otherThreshold));
+  s.smallN = Math.round(num(raw.smallN, 1, 100000, d.smallN));
   if (Array.isArray(raw.bots)) s.bots = [...new Set(raw.bots.map((b) => str(b)).filter(Boolean))];
   const c = raw.calendar || {};
   s.calendar.dayStart = parseHHMM(c.dayStart) != null ? str(c.dayStart) : d.calendar.dayStart;
@@ -120,7 +122,7 @@ export function parseSettingsJson(text) {
     throw new Error('Файл настроек не является корректным JSON.');
   }
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('В файле нет объекта настроек.');
-  const known = ['employees', 'types', 'otherThreshold', 'bots', 'calendar', 'outliers', 'columns'];
+  const known = ['employees', 'types', 'otherThreshold', 'smallN', 'bots', 'calendar', 'outliers', 'columns'];
   if (!known.some((k) => k in raw)) throw new Error('Файл не похож на настройки дашборда ОСП.');
   return normalizeSettings(raw);
 }

@@ -3,7 +3,7 @@
 
 import { buildXlsx } from '../core/xlsx-write.js';
 import { wallToExcelSerial, isoDay, fmtDay, monthBounds, MONTHS_FULL } from '../core/dates.js';
-import { METRICS, METRIC_LABEL, METRIC_SHORT, TOTAL, SMALL_N } from '../core/model.js';
+import { METRICS, METRIC_LABEL, METRIC_SHORT, TOTAL } from '../core/model.js';
 import { filterParts, outlierMethodText, hoursText, sliceText, DYN_TEXT, STEP_TEXT, STAT_TEXT } from './caption.js';
 import { qualityIssues } from './quality.js';
 import { downloadBlob } from './dom.js';
@@ -59,7 +59,7 @@ function paramsSheet(state) {
   add(`${METRIC_LABEL.a}, ${units(state).a}`, 'Дата закрытия − дата начала работы; только если обе даты есть.');
   add(`${METRIC_LABEL.b}, ${units(state).b}`, 'Дата закрытия − дата создания.');
   add('Итого', 'Среднее/медиана по всем задачам выбранных сотрудников (пулинг), а не среднее средних.');
-  add('Малая выборка', `n < ${SMALL_N}`);
+  add('Малая выборка', `n < ${state.settings.smallN} (полый маркер на графиках)`);
   add('Пустая ячейка', 'нет данных (не ноль)');
   add('Аномалии дат', 'Закрытие раньше создания — исключены из (а) и (б); закрытие раньше начала работы — исключены из (а); в количестве учитываются.');
   return { name: 'Параметры', rows, freezeRow: 1, colWidths: [38, 110], maxColWidth: 110 };
@@ -100,8 +100,9 @@ function crossSheet(state) {
       p.total ? { v: p.typeTotal.get(t.key) / p.total, s: 'pct' } : null,
     ]);
   }
+  // Исходные названия редких типов не выгружаем: в них бывают ИНН и названия компаний.
   const otherT = p.types.find((t) => t.isOther);
-  if (otherT) rows.push([], [`«Прочие» включают: ${otherT.members.join('; ')}`]);
+  if (otherT) rows.push([], [`«Прочие» — ${otherT.members.length} исходных названий, у каждого во всей выборке не более ${state.settings.otherThreshold} задач. Перечень — в дашборде (подсказка к «Прочие»).`]);
   return { name: 'Сотрудники×Типы', rows, freezeRow: 1, freezeCol: 1, skipWidthRows: otherT ? [rows.length - 1] : [] };
 }
 
@@ -184,7 +185,7 @@ function qualitySheet(state) {
   rows.push([]);
   const start = rows.length;
   rows.push([H('Проверка по всему файлу'), H('Подробности'), H('ID')]);
-  const issues = qualityIssues(state.prep);
+  const issues = qualityIssues(state.prep, { titles: false });
   if (!issues.length) rows.push(['Аномалий не найдено', null, null]);
   for (const i of issues) rows.push([i.title, i.detail || '', i.ids || '']);
   return { name: 'Качество данных', rows, freezeRow: 1, colWidths: [46, 40, 26, 18, 30, 24], skipWidthRows: Array.from({ length: rows.length - start }, (_, i) => start + i) };

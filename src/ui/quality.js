@@ -13,7 +13,8 @@ function ids(list) {
 const tasksWord = (n) => plural(n, 'задача', 'задачи', 'задач');
 
 /** [{ level: 'warn' | 'info', title, detail, ids }] */
-export function qualityIssues(prep) {
+/** titles = false — без исходных названий задач (для экспорта: в них бывают реквизиты клиентов). */
+export function qualityIssues(prep, { titles = true } = {}) {
   const ds = prep.dataset;
   const pi = ds.parseIssues;
   const q = prep.quality;
@@ -49,7 +50,7 @@ export function qualityIssues(prep) {
     out.push({ level: 'info', title: `Строк без исполнителя: ${fmtInt(q.noExecutor)}`, detail: 'Вне периметра, в расчётах не участвуют.' });
   }
   if (prep.hidden.tasks) {
-    out.push({ level: 'info', title: `Скрыто через настройки типов: ${fmtInt(prep.hidden.tasks)} ${tasksWord(prep.hidden.tasks)}`, detail: prep.hidden.titles.map((t) => `«${t.title}» — ${fmtInt(t.n)}`).join('; ') });
+    out.push({ level: 'info', title: `Скрыто через настройки типов: ${fmtInt(prep.hidden.tasks)} ${tasksWord(prep.hidden.tasks)}`, detail: titles ? prep.hidden.titles.map((t) => `«${t.title}» — ${fmtInt(t.n)}`).join('; ') : `Скрытых исходных названий: ${fmtInt(prep.hidden.titles.length)}.` });
   }
   return out;
 }
